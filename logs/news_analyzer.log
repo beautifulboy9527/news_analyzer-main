@@ -1,0 +1,77 @@
+2025-03-27 23:14:38,109 - news_analyzer - INFO - 新闻聚合与分析系统启动
+2025-03-27 23:14:38,110 - news_analyzer.storage - INFO - 数据存储目录: D:\IDMdownload\news_analyzer-main\news_analyzer\data
+2025-03-27 23:14:38,110 - news_analyzer.llm.client - INFO - 初始化LLM客户端，API类型: openai, 模型: gpt-3.5-turbo
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: BBC中文网 (https://rsshub.app/bbc/zhongwen/simp), 分类: 综合新闻
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: 界面新闻 (https://rsshub.app/jmdian/topic/119), 分类: 综合新闻
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: 第一财经 (https://rsshub.app/yicai/brief), 分类: 商业金融
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: 南方周末 (https://rsshub.app/infzm/), 分类: 综合新闻
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: 新华社新闻 (https://rsshub.app/xinhua/whxw), 分类: 综合新闻
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: 央视新闻 (https://rsshub.app/cctv/news), 分类: 综合新闻
+2025-03-27 23:14:38,142 - news_analyzer.collectors.rss - INFO - 添加RSS源: 人民日报 (https://rsshub.app/people/paper/rmrb), 分类: 综合新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 光明日报 (https://rsshub.app/gmw/paper/gmrb), 分类: 综合新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 中国日报双语新闻 (https://rsshub.app/chinadaily/dual), 分类: 综合新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 纽约时报国际 (https://rss.nytimes.com/services/xml/rss/nyt/World.xml), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 华盛顿邮报国际 (https://feeds.washingtonpost.com/rss/world), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 卫报国际 (https://www.theguardian.com/world/rss), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 半岛电视台 (https://www.aljazeera.com/xml/rss/all.xml), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: BBC国际 (https://feeds.bbci.co.uk/news/world/rss.xml), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: CNN国际 (http://rss.cnn.com/rss/cnn_world.rss), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: NHK国际 (https://www.nhk.or.jp/rss/news/cat6.xml), 分类: 国际新闻
+2025-03-27 23:14:38,143 - news_analyzer.collectors.rss - INFO - 添加RSS源: 华尔街日报中文版 (https://rsshub.app/wsj/cn), 分类: 国际新闻
+2025-03-27 23:14:38,144 - news_analyzer.collectors.rss - INFO - 添加RSS源: 纽约时报中文网 (https://rsshub.app/nytimes/dual), 分类: 国际新闻
+2025-03-27 23:14:38,144 - news_analyzer.collectors.rss - INFO - 添加RSS源: Engadget (https://www.engadget.com/rss.xml), 分类: 科技新闻
+2025-03-27 23:14:38,144 - news_analyzer.collectors.rss - INFO - 添加RSS源: The Verge (https://www.theverge.com/rss/index.xml), 分类: 科技新闻
+2025-03-27 23:14:38,145 - news_analyzer.collectors.rss - INFO - 添加RSS源: TechCrunch (https://techcrunch.com/feed/), 分类: 科技新闻
+2025-03-27 23:14:38,145 - news_analyzer.collectors.rss - INFO - 添加RSS源: Ars Technica (https://feeds.arstechnica.com/arstechnica/index), 分类: 科技新闻
+2025-03-27 23:14:38,145 - news_analyzer.collectors.rss - INFO - 添加RSS源: Solidot (https://www.solidot.org/index.rss), 分类: 科技新闻
+2025-03-27 23:14:38,145 - news_analyzer.collectors.rss - INFO - 添加RSS源: 爱范儿 (https://rsshub.app/ifanr/app), 分类: 科技新闻
+2025-03-27 23:14:38,145 - news_analyzer.collectors.rss - INFO - 添加RSS源: 经济学人 (https://www.economist.com/finance-and-economics/rss.xml), 分类: 商业金融
+2025-03-27 23:14:38,145 - news_analyzer.collectors.rss - INFO - 添加RSS源: 商业内幕 (https://www.businessinsider.com/rss), 分类: 商业金融
+2025-03-27 23:14:38,146 - news_analyzer.collectors.rss - INFO - 添加RSS源: CNBC财经 (https://www.cnbc.com/id/10001147/device/rss/rss.html), 分类: 商业金融
+2025-03-27 23:14:38,146 - news_analyzer.collectors.rss - INFO - 添加RSS源: 彭博市场 (https://rsshub.app/bloomberg/markets), 分类: 商业金融
+2025-03-27 23:14:38,146 - news_analyzer.collectors.rss - INFO - 添加RSS源: RealClearPolitics (https://www.realclearpolitics.com/index.xml), 分类: 政治新闻
+2025-03-27 23:14:38,146 - news_analyzer.collectors.rss - INFO - 添加RSS源: The Hill (https://thehill.com/feed), 分类: 政治新闻
+2025-03-27 23:14:38,146 - news_analyzer.collectors.rss - INFO - 添加RSS源: NBC政治 (https://feeds.nbcnews.com/nbcnews/public/politics), 分类: 政治新闻
+2025-03-27 23:14:38,147 - news_analyzer.collectors.rss - INFO - 添加RSS源: BBC政治 (https://feeds.bbci.co.uk/news/politics/rss.xml), 分类: 政治新闻
+2025-03-27 23:14:38,147 - news_analyzer.collectors.rss - INFO - 添加RSS源: 美联社政治 (https://rsshub.app/apnews/topics/politics), 分类: 政治新闻
+2025-03-27 23:14:38,147 - news_analyzer.collectors.rss - INFO - 添加RSS源: 日经亚洲 (https://rsshub.app/nikkei/asia), 分类: 政治新闻
+2025-03-27 23:14:38,147 - news_analyzer.collectors.rss - INFO - 添加RSS源: Science (https://www.science.org/rss/news_current.xml), 分类: 科学新闻
+2025-03-27 23:14:38,147 - news_analyzer.collectors.rss - INFO - 添加RSS源: Nature (https://www.nature.com/nature.rss), 分类: 科学新闻
+2025-03-27 23:14:38,148 - news_analyzer.collectors.rss - INFO - 添加RSS源: New Scientist (https://feeds.newscientist.com/science-news), 分类: 科学新闻
+2025-03-27 23:14:38,148 - news_analyzer.collectors.rss - INFO - 添加RSS源: Phys.org (https://phys.org/rss-feed/), 分类: 科学新闻
+2025-03-27 23:14:38,148 - news_analyzer.collectors.rss - INFO - 添加RSS源: Space.com (https://www.space.com/feeds/all), 分类: 科学新闻
+2025-03-27 23:14:38,148 - news_analyzer.collectors.rss - INFO - 添加RSS源: ESPN (https://www.espn.com/espn/rss/news), 分类: 体育新闻
+2025-03-27 23:14:38,148 - news_analyzer.collectors.rss - INFO - 添加RSS源: Sky Sports (https://www.skysports.com/rss/12040), 分类: 体育新闻
+2025-03-27 23:14:38,148 - news_analyzer.collectors.rss - INFO - 添加RSS源: 纽约时报体育 (https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml), 分类: 体育新闻
+2025-03-27 23:14:38,149 - news_analyzer.collectors.rss - INFO - 添加RSS源: Fox Sports (https://api.foxsports.com/v1/rss?partnerKey=zBaFxRyGKCfxBagJG9b8pqLyndmvo7UU), 分类: 体育新闻
+2025-03-27 23:14:38,149 - news_analyzer.collectors.rss - INFO - 添加RSS源: 卫报体育 (https://www.theguardian.com/sport/rss), 分类: 体育新闻
+2025-03-27 23:14:38,149 - news_analyzer.collectors.rss - INFO - 添加RSS源: 腾讯体育 (https://rsshub.app/qq/sports), 分类: 体育新闻
+2025-03-27 23:14:38,149 - news_analyzer.collectors.rss - INFO - 添加RSS源: 好莱坞记者 (https://www.hollywoodreporter.com/feed/), 分类: 娱乐新闻
+2025-03-27 23:14:38,150 - news_analyzer.collectors.rss - INFO - 添加RSS源: Variety (https://variety.com/feed/), 分类: 娱乐新闻
+2025-03-27 23:14:38,150 - news_analyzer.collectors.rss - INFO - 添加RSS源: Deadline (https://deadline.com/feed/), 分类: 娱乐新闻
+2025-03-27 23:14:38,150 - news_analyzer.collectors.rss - INFO - 添加RSS源: 豆瓣电影 (https://rsshub.app/douban/movie/classification), 分类: 娱乐新闻
+2025-03-27 23:14:38,150 - news_analyzer.collectors.rss - INFO - 添加RSS源: 哔哩哔哩热门 (https://rsshub.app/bilibili/ranking/0/1), 分类: 娱乐新闻
+2025-03-27 23:14:38,150 - news_analyzer.collectors.rss - INFO - 添加RSS源: CDC (https://tools.cdc.gov/api/v2/resources/media/316422.rss), 分类: 健康医疗
+2025-03-27 23:14:38,151 - news_analyzer.collectors.rss - INFO - 添加RSS源: 世界卫生组织 (https://rsshub.app/who/news), 分类: 健康医疗
+2025-03-27 23:14:38,151 - news_analyzer.collectors.rss - INFO - 添加RSS源: Inside Higher Ed (https://www.insidehighered.com/rss/feed/ihe), 分类: 文化教育
+2025-03-27 23:14:38,151 - news_analyzer.collectors.rss - INFO - 添加RSS源: 教育部新闻 (https://rsshub.app/moe/news), 分类: 文化教育
+2025-03-27 23:14:38,151 - news_analyzer - INFO - 已初始化 54 个预设新闻源
+2025-03-27 23:14:38,168 - news_analyzer.llm.client - INFO - 自动修正VolcEngine API URL为: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+2025-03-27 23:14:38,168 - news_analyzer.llm.client - INFO - 初始化LLM客户端，API类型: generic, 模型: deepseek-v3-250324
+2025-03-27 23:14:38,642 - news_analyzer.llm.client - INFO - 自动修正VolcEngine API URL为: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+2025-03-27 23:14:38,642 - news_analyzer.llm.client - INFO - 初始化LLM客户端，API类型: generic, 模型: deepseek-v3-250324
+2025-03-27 23:14:39,161 - news_analyzer.llm.client - INFO - 自动修正VolcEngine API URL为: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+2025-03-27 23:14:39,164 - news_analyzer.llm.client - INFO - 初始化LLM客户端，API类型: generic, 模型: deepseek-v3-250324
+2025-03-27 23:14:39,178 - news_analyzer.ui.history_panel - INFO - 使用的历史新闻目录: D:\IDMdownload\news_analyzer-main\news_analyzer\data\news
+2025-03-27 23:14:39,233 - news_analyzer.ui.main_window - INFO - 加载了 21 个已读新闻ID
+2025-03-27 23:14:39,234 - news_analyzer.ui.main_window - INFO - 同步了 10 个分类到侧边栏
+2025-03-27 23:14:39,236 - news_analyzer.ui.history_panel - INFO - 刷新浏览历史列表，找到 18 条记录
+2025-03-27 23:14:39,259 - news_analyzer.storage - INFO - 从 D:\IDMdownload\news_analyzer-main\news_analyzer\data\news\news_20250327_230338.json 加载了 1405 条新闻
+2025-03-27 23:14:39,360 - news_analyzer.ui.main_window - INFO - 启动时加载了 1405 条历史新闻
+2025-03-27 23:14:39,361 - news_analyzer.ui.main_window - INFO - 主窗口已初始化
+2025-03-27 23:14:39,364 - news_analyzer.ui.main_window - INFO - 初始化后 refresh_action enabled: True
+2025-03-27 23:21:23,465 - news_analyzer.ui.history_panel - INFO - 刷新浏览历史列表，找到 18 条记录
+2025-03-27 23:21:23,520 - news_analyzer.ui.history_panel - INFO - 刷新浏览历史列表，找到 18 条记录
+2025-03-27 23:21:31,851 - news_analyzer.ui.main_window - INFO - 保存了 0 个用户添加的RSS源
+2025-03-27 23:21:31,851 - news_analyzer.ui.main_window - INFO - 保存了 21 个已读新闻ID
+2025-03-27 23:21:33,454 - news_analyzer.ui.main_window - INFO - 应用程序关闭
