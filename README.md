@@ -98,7 +98,7 @@ requirements.txt     # Python 依赖列表
 
 | 支付宝 (Alipay) | 微信支付 (WeChat Pay) |
 | :-------------: | :-----------------: |
-| ![支付宝收款码](https://i.111666.best/image/yiSToAFoMaMzB3D2L5obTw.jpg) | ![微信支付收款码](https://i.111666.best/image/grVp4isj4k5jxFdWyCR8d9.jpg) |
+| ![支付宝收款码](images/alipay_qr.png) | ![微信支付收款码](images/wechat_qr.png) |
 | (推荐使用支付宝) | (推荐使用微信支付) |
 
 ---
