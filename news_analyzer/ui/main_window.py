@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
         self.app_service = app_service # 保存 AppService 实例
 
         # 设置窗口属性
-        self.setWindowTitle("新闻聚合与分析系统")
+        self.setWindowTitle("讯析 v1.0.0") # 修改窗口标题并加入版本号
         self.setMinimumSize(1200, 800)
 
         # --- 直接在 MainWindow 创建和管理 LLMClient ---
