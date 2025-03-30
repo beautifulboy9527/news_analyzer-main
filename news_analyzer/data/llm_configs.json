@@ -1,0 +1,20 @@
+{
+    "火山引擎deepseek": {
+        "api_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "encrypted_api_key": "gAAAAABn54_B0Vpoo8vPhC9gTl6GDWRpk4As5oVuBFPF2OLoqbHFYcr5lxzUho9MspNAGp03LK6AyfAl3I30i5g_v85tYx1I2vE7tktOEPneZfaZrALpUUpc7OMHQDzzafzvLcw3Tx3F",
+        "model": "deepseek-v3-250324",
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "system_prompt": "",
+        "timeout": 60
+    },
+    "grok": {
+        "api_url": "https://api.x.ai",
+        "encrypted_api_key": "gAAAAABn55o11BD1_o9t77BREvPcNmeJawXB1wdvV8ziMAHJrd7DaCIWYUTayp_BjIav9dQ9tQVGH59P45pTaqB_aznSHPW9Ez0IWwBasNH2d7oC9caZHyvvruiQwOF9ZfVIqidqCGsYclj1JXOsWlNfxrrhWCNBU-PnEyM4klKMCae_x-OEbyik1YmO8EvQT93ytbw_wLYu",
+        "model": "grok-2-latest",
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "system_prompt": "",
+        "timeout": 60
+    }
+}

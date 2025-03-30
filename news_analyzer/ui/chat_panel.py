@@ -6,6 +6,8 @@
 """
 
 import logging
+from typing import List # 导入 List
+
 import math
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, 
                             QPushButton, QScrollArea, QLabel, QTextBrowser,
@@ -16,6 +18,8 @@ from PyQt5.QtGui import (QColor, QPainter, QPixmap, QIcon, QKeyEvent, QPalette,
                         QLinearGradient, QFont, QRadialGradient)
 
 from news_analyzer.llm.llm_client import LLMClient
+from ..models import NewsArticle # 相对导入 NewsArticle
+
 
 
 class StreamHandler(QObject):
@@ -55,31 +59,22 @@ class ChatBubble(QFrame):
     def _init_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        
-        if self.is_user:
-            self.setStyleSheet("""
-                QFrame {
-                    border-radius: 15px;
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
-                                stop:0 #E3F2FD, stop:1 #BBDEFB);
-                    border: 1px solid #90CAF9;
-                    margin: 2px;
-                }
-            """)
-            text_color = "#263238"
-            align = Qt.AlignRight
-        else:
-            self.setStyleSheet("""
-                QFrame {
-                    border-radius: 15px;
-                    background-color: #F5F5F5;
-                    border: 1px solid #E0E0E0;
-                    margin: 2px;
-                }
-            """)
-            text_color = "#37474F"
-            align = Qt.AlignLeft
-        
+
+        # 移除 ChatBubble 的内联样式，让其继承全局主题
+        # if self.is_user:
+        #     self.setStyleSheet("""...""")
+        #     text_color = "#263238" # 颜色应由全局主题控制
+        #     align = Qt.AlignRight
+        # else:
+        #     self.setStyleSheet("""...""")
+        #     text_color = "#37474F" # 颜色应由全局主题控制
+        #     align = Qt.AlignLeft
+
+        # 对齐方式仍需设置
+        align = Qt.AlignRight if self.is_user else Qt.AlignLeft
+        # 文字颜色应由全局主题控制，这里设置一个默认值以防万一
+        text_color = "#cccccc" # 假设深色主题下的默认文字颜色
+
         self.text_browser = QTextBrowser()
         self.text_browser.setHtml(self.text)
         self.text_browser.setOpenExternalLinks(True)
@@ -89,21 +84,11 @@ class ChatBubble(QFrame):
         palette = self.text_browser.palette()
         palette.setBrush(QPalette.Base, Qt.transparent)
         self.text_browser.setPalette(palette)
-        
-        # 增强文本样式以提高可读性
-        self.text_browser.setStyleSheet(f"""
-            QTextBrowser {{
-                border: none;
-                background-color: transparent;
-                padding: 12px 16px;
-                font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-                font-size: 15px;
-                line-height: 1.8;
-                color: {text_color};
-                selection-background-color: #BBDEFB;
-            }}
-        """)
-        
+
+        # 移除 QTextBrowser 的内联样式，让其继承全局主题
+        # self.text_browser.setStyleSheet(f"""...""")
+        # 可以在全局主题中为 QTextBrowser 设置 padding, font-family, font-size, line-height, color, selection-background-color
+
         # 关键修改: 设置最小高度但移除最大高度限制
         self.text_browser.setMinimumHeight(60)
         # 使用Qt的默认最大值，实际上是移除限制
@@ -279,11 +264,11 @@ class TypingIndicator(QWidget):
 class ChatPanel(QWidget):
     """聊天面板组件"""
     message_sent = pyqtSignal(str)
-    
-    def __init__(self, parent=None):
+
+    def __init__(self, llm_client: LLMClient, parent=None): # 添加 llm_client 参数
         super().__init__(parent)
         self.logger = logging.getLogger('news_analyzer.ui.chat_panel')
-        self.llm_client = LLMClient()
+        self.llm_client = llm_client # 使用传入的实例
         self.current_news = None
         self.chat_history = []
         
@@ -315,99 +300,34 @@ class ChatPanel(QWidget):
         # 顶部标题和控制栏
         header_layout = QHBoxLayout()
         title_label = QLabel("智能助手聊天")
-        title_label.setStyleSheet("""
-            font-weight: bold; 
-            font-size: 16px; 
-            color: #1976D2;
-            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-            padding: 5px;
-        """)
+        # 移除内联样式
+        # title_label.setStyleSheet("""...""")
         header_layout.addWidget(title_label)
-        
+
         self.context_checkbox = QCheckBox("使用新闻上下文")
         self.context_checkbox.setChecked(False)  # 默认不使用新闻上下文
         self.context_checkbox.toggled.connect(self._toggle_context_mode)
-        self.context_checkbox.setStyleSheet("""
-            QCheckBox {
-                font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-                color: #455A64;
-            }
-            QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
-            }
-            QCheckBox::indicator:unchecked {
-                border: 2px solid #90A4AE;
-                background-color: white;
-                border-radius: 4px;
-            }
-            QCheckBox::indicator:checked {
-                border: 2px solid #2196F3;
-                background-color: #2196F3;
-                border-radius: 4px;
-            }
-        """)
+        # 移除内联样式
+        # self.context_checkbox.setStyleSheet("""...""")
         header_layout.addWidget(self.context_checkbox)
         header_layout.addStretch()
         
         self.clear_button = QPushButton("清空聊天")
         self.clear_button.setFixedSize(100, 32)
-        self.clear_button.setStyleSheet("""
-            QPushButton {
-                background-color: #ECEFF1;
-                border: 1px solid #CFD8DC;
-                border-radius: 16px;
-                padding: 4px 12px;
-                color: #455A64;
-                font-weight: bold;
-                font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-            }
-            QPushButton:hover {
-                background-color: #CFD8DC;
-                border: 1px solid #B0BEC5;
-            }
-            QPushButton:pressed {
-                background-color: #B0BEC5;
-            }
-        """)
+        # 移除内联样式
+        # self.clear_button.setStyleSheet("""...""")
         self.clear_button.clicked.connect(self._clear_chat)
         header_layout.addWidget(self.clear_button)
         layout.addLayout(header_layout)
         
         # 聊天区域 - 使用自定义滚动区域支持平滑滚动
         self.chat_area = SmoothScrollArea()
+        self.chat_area.setObjectName("chatArea") # 设置 objectName
         self.chat_area.setWidgetResizable(True)
         self.chat_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.chat_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.chat_area.setStyleSheet("""
-            QScrollArea {
-                border: 1px solid #E0E0E0;
-                background-color: #FAFAFA;
-                border-radius: 8px;
-            }
-            QScrollBar:vertical {
-                border: none;
-                background: #F5F5F5;
-                width: 10px;
-                border-radius: 5px;
-            }
-            QScrollBar::handle:vertical {
-                background: #BDBDBD;
-                min-height: 30px;
-                border-radius: 5px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: #9E9E9E;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                border: none;
-                background: none;
-                height: 0px;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-                background: none;
-            }
-        """)
+        # 移除内联样式
+        # self.chat_area.setStyleSheet("""...""")
         
         self.chat_container = QWidget()
         self.chat_layout = QVBoxLayout(self.chat_container)
@@ -438,28 +358,17 @@ class ChatPanel(QWidget):
         
         input_frame = QFrame()
         input_frame.setFrameShape(QFrame.StyledPanel)
-        input_frame.setStyleSheet("""
-            QFrame {
-                border: 1px solid #BDBDBD;
-                border-radius: 18px;
-                background-color: white;
-            }
-        """)
+        # 移除内联样式
+        # input_frame.setStyleSheet("""...""")
         input_frame_layout = QHBoxLayout(input_frame)
         input_frame_layout.setContentsMargins(10, 5, 10, 5)
-        
+
         self.message_input = QTextEdit()
+        self.message_input.setObjectName("chatInput") # 设置 objectName
         self.message_input.setFixedHeight(60)
         self.message_input.setPlaceholderText("输入消息，按Enter发送...")
-        self.message_input.setStyleSheet("""
-            QTextEdit {
-                border: none;
-                padding: 8px;
-                font-size: 14px;
-                font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
-                background-color: transparent;
-            }
-        """)
+        # 移除内联样式
+        # self.message_input.setStyleSheet("""...""")
         self.message_input.installEventFilter(self)
         input_frame_layout.addWidget(self.message_input)
         
@@ -467,25 +376,9 @@ class ChatPanel(QWidget):
         
         self.send_button = QPushButton("")
         self.send_button.setFixedSize(60, 60)
-        self.send_button.setStyleSheet("""
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                border-radius: 30px;
-                font-weight: bold;
-                font-size: 18px;
-            }
-            QPushButton:hover {
-                background-color: #1E88E5;
-            }
-            QPushButton:pressed {
-                background-color: #1976D2;
-            }
-            QPushButton:disabled {
-                background-color: #BDBDBD;
-            }
-        """)
-        
+        # 移除内联样式
+        # self.send_button.setStyleSheet("""...""")
+
         send_icon = QIcon.fromTheme("send")
         if not send_icon.isNull():
             self.send_button.setIcon(send_icon)
@@ -514,14 +407,13 @@ class ChatPanel(QWidget):
         """
         self._add_message(welcome_text)
     
-    def set_available_news_items(self, news_items):
+    def set_available_news_items(self, news_articles: List[NewsArticle]): # 参数改为 news_articles
         """设置当前可用的所有新闻标题"""
-        self.available_news_items = []
-        for news in news_items:
-            title = news.get('title', '无标题')
-            self.available_news_items.append(title)
-        
-        self.logger.debug(f"设置了 {len(self.available_news_items)} 条可用新闻标题")
+        # --- 修改：直接保存 NewsArticle 对象列表 ---
+        self.available_news_items = news_articles # 保存对象列表
+        # 提取标题用于日志
+        titles_count = len(self.available_news_items)
+        self.logger.debug(f"设置了 {titles_count} 条可用新闻文章")
     
     def eventFilter(self, obj, event):
         """事件过滤器 - 处理Enter键发送"""
@@ -535,11 +427,13 @@ class ChatPanel(QWidget):
         """切换新闻上下文模式"""
         self.use_news_context = checked
         
-        if checked and self.current_news:
+        if checked and self.current_news: # self.current_news is now NewsArticle
+            # --- 修改：使用属性访问 ---
+            title = self.current_news.title if self.current_news.title else '无标题'
             message = f"""
             <div style='font-family: "Microsoft YaHei", "Segoe UI", sans-serif; line-height: 1.8;'>
                 <h3 style='color: #1976D2; margin-bottom: 10px;'>已切换到新闻上下文模式</h3>
-                <p style='margin: 8px 0;'>当前新闻: <strong>{self.current_news.get('title', '无标题')}</strong></p>
+                <p style='margin: 8px 0;'>当前新闻: <strong>{title}</strong></p>
             </div>
             """
         elif checked and not self.current_news:
@@ -559,15 +453,17 @@ class ChatPanel(QWidget):
         
         self._add_message(message)
     
-    def set_current_news(self, news_item):
+    def set_current_news(self, news_article: NewsArticle): # 参数改为 news_article
         """设置当前新闻"""
-        if not news_item:
+        if not news_article or not isinstance(news_article, NewsArticle): # 检查类型
+            self.logger.warning("set_current_news 接收到的不是有效的 NewsArticle 对象")
             return
-            
-        self.current_news = news_item
-        
+
+        self.current_news = news_article # 保存 NewsArticle 对象
+
         if self.use_news_context:
-            title = news_item.get('title', '未知标题')
+            # --- 修改：使用属性访问 ---
+            title = news_article.title if news_article.title else '未知标题'
             text = f"""
             <div style='font-family: "Microsoft YaHei", "Segoe UI", sans-serif; line-height: 1.8;'>
                 <h3 style='color: #1976D2; margin-bottom: 10px;'>📰 已选择新闻</h3>
@@ -576,10 +472,12 @@ class ChatPanel(QWidget):
             </div>
             """
             self._add_message(text)
-        
-        self.logger.debug(f"设置当前新闻: {news_item.get('title', '')[:30]}...")
-    
 
+        # --- 再次修改：确保日志也使用属性访问 ---
+        title = news_article.title if news_article and news_article.title else '未知标题'
+        self.logger.debug(f"设置当前新闻: {title[:30]}...")
+
+    @pyqtSlot(str)
     @pyqtSlot(str)
     def set_current_category(self, category):
         """设置当前选中的新闻分类"""
@@ -618,14 +516,13 @@ class ChatPanel(QWidget):
             <div style='margin: 12px 0 12px 0;'>
         """
         
-        # 列出所有新闻标题
-        for i, news_item in enumerate(self.available_news_items, 1):
-            # --- 修复缩进：将以下代码移入 for 循环 ---
-            title = news_item.get('title', '无标题')
+        # 列出所有新闻标题 (现在 available_news_items 是 NewsArticle 对象列表)
+        for i, news_article in enumerate(self.available_news_items, 1):
+            # --- 修改：使用属性访问 ---
+            title = news_article.title if news_article.title else '无标题'
             response += f"""<p style='margin: 6px 0; padding-left: 12px; border-left: 3px solid #90CAF9;'>
                 <span style='color: #1976D2; font-weight: 500;'>{i}.</span> {title}
             </p>"""
-            # --- 修复缩进结束 ---
 
     def _is_asking_about_category(self, message):
         """检查用户是否在询问关于当前分类的问题"""
@@ -741,13 +638,21 @@ class ChatPanel(QWidget):
                 # 注意：分类上下文优先，即使 self.use_news_context 为 True 且 self.current_news 存在
 
             # 如果不是分类查询，再检查是否使用单篇新闻上下文
-            elif self.use_news_context and self.current_news:
-                # (单篇新闻上下文逻辑保持不变)
-                title = self.current_news.get('title', '')
-                source = self.current_news.get('source_name', '')
-                content = self.current_news.get('description', '')
-                pub_date = self.current_news.get('pub_date', '')
-                link = self.current_news.get('link', '')
+            elif self.use_news_context and self.current_news: # self.current_news is NewsArticle
+                # --- 修改：使用属性访问 ---
+                title = self.current_news.title if self.current_news.title else ''
+                source = self.current_news.source_name if self.current_news.source_name else ''
+                # 优先使用 summary，其次 content
+                content = self.current_news.summary or self.current_news.content or ''
+                # 格式化日期
+                if self.current_news.publish_time:
+                    try:
+                        pub_date = self.current_news.publish_time.strftime('%Y-%m-%d %H:%M:%S')
+                    except ValueError:
+                        pub_date = "无效日期"
+                else:
+                    pub_date = "未知日期"
+                link = self.current_news.link if self.current_news.link else ''
 
                 context = f"""新闻标题: {title}
 新闻来源: {source}

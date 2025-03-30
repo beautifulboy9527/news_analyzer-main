@@ -5,9 +5,10 @@
 """
 
 import logging
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QLabel, QListWidget, 
-                            QListWidgetItem)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QLabel, QListWidget,
+                             QListWidgetItem) # Remove QPalette, QColor
 from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtGui import QPalette, QColor # Import from QtGui
 from news_analyzer.collectors.categories import STANDARD_CATEGORIES
 
 
@@ -32,15 +33,33 @@ class CategorySidebar(QWidget):
         
         # 标题标签
         title_label = QLabel("新闻分类")
-        title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        # title_label.setStyleSheet("font-weight: bold; font-size: 14px;") # 移除内联样式
         layout.addWidget(title_label)
-        
+
         # 分类列表
         self.category_list = QListWidget()
-        self.category_list.setAlternatingRowColors(True)
+        self.category_list.setObjectName("sidebarList") # 设置 objectName
+        self.category_list.setAlternatingRowColors(False) # 禁用交替行颜色
         self.category_list.itemClicked.connect(self._on_category_clicked)
+        # --- 移除焦点虚线框 ---
+        self.category_list.setStyleSheet("QListWidget { outline: none; } QListWidget::item:selected { border: none; }")
+
+        # --- 通过 Palette 设置深色背景 ---
+        # from PyQt5.QtGui import QPalette, QColor # 已在文件顶部导入
+        palette = self.category_list.palette()
+        # 使用更符合优雅黑的颜色
+        palette.setColor(QPalette.Base, QColor("#1a1a1a")) # 列表背景
+        palette.setColor(QPalette.Text, QColor("#e8e8e8")) # 列表文字
+        palette.setColor(QPalette.Highlight, QColor("#2c2c2c")) # 选中背景
+        palette.setColor(QPalette.HighlightedText, QColor("#f5f5f5")) # 选中文字
+        # 可以尝试设置交替行颜色
+        # palette.setColor(QPalette.AlternateBase, QColor("#1e1e1e"))
+        self.category_list.setPalette(palette)
+        self.category_list.viewport().setAutoFillBackground(True) # 确保 viewport 使用 Palette 填充
+        # --- Palette 设置结束 ---
+
         layout.addWidget(self.category_list)
-        
+
         # 添加默认分类
         self.add_category("所有")
         

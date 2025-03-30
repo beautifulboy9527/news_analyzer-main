@@ -13,6 +13,9 @@ from urllib.error import URLError
 import xml.etree.ElementTree as ET
 # import spacy # 移除 spacy
 from langdetect import detect, LangDetectException
+from typing import List, Dict # 导入 List 和 Dict
+from ..models import NewsSource # 相对导入 NewsSource
+
 from ..llm.llm_client import LLMClient # 相对导入
 
 
@@ -223,26 +226,31 @@ class RSSCollector:
         for source in self.sources:
             categories.add(source['category'])
         return sorted(list(categories))
-    
-    def _fetch_rss(self, source):
-        """从RSS源获取新闻
-        
-        Args:
-            source: 新闻源信息字典
 
-            
+    # --- 重命名 _fetch_rss 为 collect 并修改签名 ---
+    def collect(self, source_config: NewsSource, **kwargs) -> List[Dict]: # 添加 **kwargs
+        """从单个RSS源获取新闻 (统一接口)
+
+        Args:
+            source_config: 新闻源配置对象 (NewsSource)
+
         Returns:
-            list: 新闻条目列表
+            list: 包含新闻信息的原始字典列表
         """
         items = []
-        
+        url = source_config.url
+        if not url:
+             self.logger.warning(f"RSS 源 '{source_config.name}' 没有提供 URL")
+             return []
+
+        self.logger.info(f"开始从 RSS 源获取: {source_config.name} ({url})")
         try:
             # 创建带User-Agent的请求以避免被屏蔽
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
-            req = Request(source['url'], headers=headers)
-            
+            req = Request(url, headers=headers) # 使用 source_config.url
+
             # 获取RSS内容
             with urlopen(req, context=self.ssl_context, timeout=10) as response:
                 rss_content = response.read().decode('utf-8', errors='ignore')
@@ -256,21 +264,25 @@ class RSSCollector:
                 channel = root.find('channel')
                 if channel is not None:
                     for item in channel.findall('item'):
-                        news_item = self._parse_rss_item(item, source)
+                        # --- 修改：传递 source_config ---
+                        news_item = self._parse_rss_item(item, source_config)
                         if news_item:
                             items.append(news_item)
-            
+
             elif root.tag.endswith('feed'):
                 # Atom格式
                 for entry in root.findall('{http://www.w3.org/2005/Atom}entry'):
-                    news_item = self._parse_atom_entry(entry, source)
+                     # --- 修改：传递 source_config ---
+                    news_item = self._parse_atom_entry(entry, source_config)
                     if news_item:
                         items.append(news_item)
-            
-            self.logger.info(f"从 {source['name']} 获取了 {len(items)} 条新闻")
-            
+
+            # --- 修改：使用 source_config.name ---
+            self.logger.info(f"从 {source_config.name} 获取了 {len(items)} 条新闻")
+
         except Exception as e:
-            self.logger.error(f"获取 {source['name']} 的新闻失败: {str(e)}")
+             # --- 修改：使用 source_config.name ---
+            self.logger.error(f"获取 {source_config.name} 的新闻失败: {str(e)}")
             raise
         
         return items
@@ -320,15 +332,16 @@ class RSSCollector:
 
         return final_title
 
-    def _parse_rss_item(self, item, source):
+    # --- 修改签名和内部逻辑 ---
+    def _parse_rss_item(self, item, source_config: NewsSource):
         """解析RSS条目
-        
+
         Args:
             item: RSS条目XML元素
-            source: 来源信息
-            
+            source_config: 来源配置对象 (NewsSource)
+
         Returns:
-            dict: 新闻条目字典
+            dict: 新闻条目字典 或 None
         """
         try:
             # 提取标题和链接（必需字段）
@@ -345,80 +358,102 @@ class RSSCollector:
             if not title or not link: # 使用清理后的 title 判断
                 return None
             
-            # 提取描述/内容和发布日期（可选字段）
-            description = ""
-            # 优先尝试 content:encoded (常见于提供全文的RSS)
-            # 注意：需要添加命名空间处理，但 ElementTree 对命名空间的支持有限，这里简化处理
+            # --- 提取内容和摘要 ---
+            content = None
+            summary = None
+
+            # 优先尝试 content:encoded 获取完整内容
             content_encoded_elem = item.find('{http://purl.org/rss/1.0/modules/content/}encoded')
             if content_encoded_elem is not None and content_encoded_elem.text:
-                description = content_encoded_elem.text # 保留 HTML 供预览显示
-            else:
-                # 其次尝试 description
+                content = content_encoded_elem.text # 保留 HTML
+                self.logger.debug(f"从 content:encoded 提取到内容, 长度: {len(content)}")
+                # 尝试从 description 获取摘要
                 desc_elem = item.find('description')
                 if desc_elem is not None and desc_elem.text:
-                    # 简单清理HTML标签 (如果不是 content:encoded)
-                    description = re.sub(r'<[^>]+>', ' ', desc_elem.text)
-                    description = re.sub(r'\s+', ' ', description).strip()
+                    # 清理 HTML 作为摘要
+                    summary_text = re.sub(r'<[^>]+>', ' ', desc_elem.text)
+                    summary = re.sub(r'\s+', ' ', summary_text).strip()
+                    self.logger.debug(f"从 description 提取到摘要, 长度: {len(summary)}")
 
-            pub_date = ""
+            else:
+                # 如果没有 content:encoded，则尝试将 description 作为内容或摘要
+                desc_elem = item.find('description')
+                if desc_elem is not None and desc_elem.text:
+                    # 简单判断：如果 description 包含 HTML 标签，可能更像内容
+                    if '<' in desc_elem.text and '>' in desc_elem.text:
+                        content = desc_elem.text # 保留 HTML 作为内容
+                        self.logger.debug(f"将包含 HTML 的 description 作为内容, 长度: {len(content)}")
+                        # 尝试生成简短摘要 (如果需要，或留空)
+                        summary_text = re.sub(r'<[^>]+>', ' ', desc_elem.text)
+                        summary = re.sub(r'\s+', ' ', summary_text).strip()[:200] + "..." # 截断作为摘要
+                    else:
+                        # 纯文本 description 作为摘要
+                        summary = desc_elem.text.strip()
+                        self.logger.debug(f"将纯文本 description 作为摘要, 长度: {len(summary)}")
+                        content = summary # 也将纯文本摘要作为内容备选
+
+            # --- 提取发布日期 ---
+            pub_date = None # 使用 None 而不是空字符串
             date_elem = item.find('pubDate')
             if date_elem is not None and date_elem.text:
-                pub_date = date_elem.text
-            
-            # 创建新闻条目
-            return {
+                pub_date = date_elem.text.strip()
+
+            # --- 创建新闻条目字典 ---
+            news_item = {
                 'title': title,
                 'link': link,
-                'description': description,
-                'pub_date': pub_date,
-                'source_name': source['name'],
-                'source_url': source['url'],
-                'category': source['category'],
+                'content': content, # 使用 'content' 键
+                'summary': summary, # 使用 'summary' 键
+                'publish_time': pub_date,
+                'source_name': source_config.name,
+                'source_url': source_config.url,
+                'category': source_config.category,
                 'collected_at': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'title_en': '', # 新增字段
-                'description_en': '', # 新增字段
-                'keywords_en': [] # 新增字段
+                # 'title_en': '', # 暂时注释掉翻译相关
+                # 'description_en': '',
+                # 'keywords_en': []
             }
 
-            # --- 开始翻译和关键词提取 ---
-            text_to_process = f"{title}\n{description}"
-            lang = 'en' # 默认英文
-            try:
-                if text_to_process.strip():
-                    lang = detect(text_to_process)
-            except LangDetectException:
-                self.logger.warning(f"无法检测语言，假设为英文: {text_to_process[:50]}...")
-                lang = 'en'
-
-            if lang != 'en':
-                self.logger.debug(f"检测到非英文内容 ({lang})，尝试翻译: {title[:30]}...")
-                news_item['title_en'] = self.llm_client.translate_text(title, target_language="English")
-                news_item['description_en'] = self.llm_client.translate_text(description, target_language="English")
-            else:
-                news_item['title_en'] = title
-                news_item['description_en'] = description
-
-            # 移除关键词提取逻辑
-            # if self.nlp:
-            #     ...
-            news_item['keywords_en'] = [] # 保留字段但设置为空列表
-            # --- 结束翻译和关键词提取 ---
+            # --- 暂时注释掉翻译和关键词提取逻辑 ---
+            # text_to_process = f"{title}\n{summary or content or ''}" # 使用 summary 或 content
+            # lang = 'en'
+            # try:
+            #     if text_to_process.strip():
+            #         lang = detect(text_to_process)
+            # except LangDetectException:
+            #     self.logger.warning(f"无法检测语言，假设为英文: {text_to_process[:50]}...")
+            #     lang = 'en'
+            #
+            # if lang != 'en':
+            #     self.logger.debug(f"检测到非英文内容 ({lang})，尝试翻译: {title[:30]}...")
+            #     news_item['title_en'] = self.llm_client.translate_text(title, target_language="English")
+            #     # 翻译摘要或内容
+            #     text_to_translate = summary if summary else content
+            #     if text_to_translate:
+            #          news_item['description_en'] = self.llm_client.translate_text(text_to_translate, target_language="English")
+            # else:
+            #     news_item['title_en'] = title
+            #     news_item['description_en'] = summary if summary else content
+            #
+            # news_item['keywords_en'] = []
+            # --- 翻译结束 ---
 
             return news_item
 
         except Exception as e:
-            self.logger.error(f"解析或处理RSS条目失败: {str(e)}")
+            self.logger.error(f"解析或处理RSS条目失败: {str(e)}", exc_info=True) # 添加 exc_info=True
             return None
-    
-    def _parse_atom_entry(self, entry, source):
+
+    # --- 修改签名和内部逻辑 ---
+    def _parse_atom_entry(self, entry, source_config: NewsSource):
         """解析Atom条目
-        
+
         Args:
             entry: Atom条目XML元素
-            source: 来源信息
-            
+            source_config: 来源配置对象 (NewsSource)
+
         Returns:
-            dict: 新闻条目字典
+            dict: 新闻条目字典 或 None
         """
         try:
             # 提取标题（必需字段）
@@ -439,65 +474,93 @@ class RSSCollector:
                 return None
             
             # 提取内容和发布日期
-            # 提取内容和发布日期
-            content = ""
-            # 优先尝试 content
+            # --- 提取内容和摘要 ---
+            content = None
+            summary = None
+
+            # 优先尝试 content 获取完整内容
             content_elem = entry.find('{http://www.w3.org/2005/Atom}content')
             if content_elem is not None and content_elem.text:
                 content = content_elem.text # 保留 HTML
-            # 其次尝试 summary
+                self.logger.debug(f"从 Atom content 提取到内容, 长度: {len(content)}")
+                # 尝试从 summary 获取摘要
+                summary_elem = entry.find('{http://www.w3.org/2005/Atom}summary')
+                if summary_elem is not None and summary_elem.text:
+                    # 清理 HTML 作为摘要 (Atom summary 通常是纯文本或简单 HTML)
+                    summary_text = re.sub(r'<[^>]+>', ' ', summary_elem.text)
+                    summary = re.sub(r'\s+', ' ', summary_text).strip()
+                    self.logger.debug(f"从 Atom summary 提取到摘要, 长度: {len(summary)}")
+
+            # 如果没有 content，则尝试将 summary 作为内容或摘要
             elif entry.find('{http://www.w3.org/2005/Atom}summary') is not None and entry.find('{http://www.w3.org/2005/Atom}summary').text:
                  summary_elem = entry.find('{http://www.w3.org/2005/Atom}summary')
-                 content = summary_elem.text # 保留 HTML
+                 summary_text = summary_elem.text.strip()
+                 # 简单判断 summary 是否像内容 (Atom summary 通常较短)
+                 if '<' in summary_text and '>' in summary_text: # 如果包含 HTML
+                     content = summary_text # 保留 HTML 作为内容
+                     self.logger.debug(f"将包含 HTML 的 Atom summary 作为内容, 长度: {len(content)}")
+                     # 尝试生成简短摘要
+                     plain_summary = re.sub(r'<[^>]+>', ' ', summary_text)
+                     summary = re.sub(r'\s+', ' ', plain_summary).strip()[:200] + "..."
+                 else: # 纯文本 summary
+                     summary = summary_text
+                     content = summary # 也将纯文本摘要作为内容备选
+                     self.logger.debug(f"将纯文本 Atom summary 作为摘要和内容, 长度: {len(summary)}")
 
-            pub_date = ""
+            # --- 提取发布日期 ---
+            pub_date = None # 使用 None
+            # 优先尝试 published
             date_elem = entry.find('{http://www.w3.org/2005/Atom}published')
+            # 其次尝试 updated
+            if date_elem is None:
+                 date_elem = entry.find('{http://www.w3.org/2005/Atom}updated')
+
             if date_elem is not None and date_elem.text:
-                pub_date = date_elem.text
-            
-            # 创建新闻条目
-            return {
+                pub_date = date_elem.text.strip()
+
+            # --- 创建新闻条目字典 ---
+            news_item = {
                 'title': title,
                 'link': link,
-                'description': content,
-                'pub_date': pub_date,
-                'source_name': source['name'],
-                'source_url': source['url'],
-                'category': source['category'],
+                'content': content, # 使用 'content' 键
+                'summary': summary, # 使用 'summary' 键
+                'publish_time': pub_date,
+                'source_name': source_config.name,
+                'source_url': source_config.url,
+                'category': source_config.category,
                 'collected_at': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'title_en': '', # 新增字段
-                'description_en': '', # 新增字段 (使用 content 作为 description)
-                'keywords_en': [] # 新增字段
+                # 'title_en': '', # 暂时注释掉翻译相关
+                # 'description_en': '',
+                # 'keywords_en': []
             }
 
-            # --- 开始翻译和关键词提取 ---
-            text_to_process = f"{title}\n{content}" # 使用 content 作为 description
-            lang = 'en' # 默认英文
-            try:
-                if text_to_process.strip():
-                    lang = detect(text_to_process)
-            except LangDetectException:
-                self.logger.warning(f"无法检测语言，假设为英文: {text_to_process[:50]}...")
-                lang = 'en'
-
-            if lang != 'en':
-                self.logger.debug(f"检测到非英文内容 ({lang})，尝试翻译: {title[:30]}...")
-                news_item['title_en'] = self.llm_client.translate_text(title, target_language="English")
-                news_item['description_en'] = self.llm_client.translate_text(content, target_language="English")
-            else:
-                news_item['title_en'] = title
-                news_item['description_en'] = content
-
-            # 移除关键词提取逻辑
-            # if self.nlp:
-            #     ...
-            news_item['keywords_en'] = [] # 保留字段但设置为空列表
-            # --- 结束翻译和关键词提取 ---
+            # --- 暂时注释掉翻译和关键词提取逻辑 ---
+            # text_to_process = f"{title}\n{summary or content or ''}"
+            # lang = 'en'
+            # try:
+            #     if text_to_process.strip():
+            #         lang = detect(text_to_process)
+            # except LangDetectException:
+            #     self.logger.warning(f"无法检测语言，假设为英文: {text_to_process[:50]}...")
+            #     lang = 'en'
+            #
+            # if lang != 'en':
+            #     self.logger.debug(f"检测到非英文内容 ({lang})，尝试翻译: {title[:30]}...")
+            #     news_item['title_en'] = self.llm_client.translate_text(title, target_language="English")
+            #     text_to_translate = summary if summary else content
+            #     if text_to_translate:
+            #         news_item['description_en'] = self.llm_client.translate_text(text_to_translate, target_language="English")
+            # else:
+            #     news_item['title_en'] = title
+            #     news_item['description_en'] = summary if summary else content
+            #
+            # news_item['keywords_en'] = []
+            # --- 翻译结束 ---
 
             return news_item
 
         except Exception as e:
-            self.logger.error(f"解析或处理Atom条目失败: {str(e)}")
+            self.logger.error(f"解析或处理Atom条目失败: {str(e)}", exc_info=True) # 添加 exc_info=True
             return None
     
     def _remove_duplicates(self, news_items):

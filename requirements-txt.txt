@@ -1,6 +1,8 @@
-# 基础依赖
-PyQt5>=5.15.0
-requests>=2.25.0
-
-# NLP 依赖 (语言检测) - 移除 spacy
-langdetect>=1.0.9
+PyQt5
+requests
+feedparser
+beautifulsoup4
+langdetect
+jieba
+cryptography
+PyQtWebEngine

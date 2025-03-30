@@ -12,6 +12,11 @@ import time
 import threading
 from typing import Callable, Dict, List, Optional, Union, Any
 
+# --- 移除 QSettings 导入，添加 LLMConfigManager 导入 ---
+# from PyQt5.QtCore import QSettings # 不再直接使用 QSettings 读取配置
+from ..config.llm_config_manager import LLMConfigManager
+# --- 导入结束 ---
+
 
 class LLMClient:
     """LLM客户端类"""
@@ -25,25 +30,63 @@ class LLMClient:
             model: 模型名称，如果为None则使用默认值
         """
         self.logger = logging.getLogger('news_analyzer.llm.client')
-        
-        # 设置API密钥（优先使用参数，其次使用环境变量）
-        self.api_key = api_key or os.environ.get('LLM_API_KEY', '')
-        
-        # 设置API URL
-        self.api_url = api_url or os.environ.get(
-            'LLM_API_URL', 
-            'https://api.openai.com/v1/chat/completions'
-        )
-        
-        # Correct VolcEngine URL if base path /api/v3 is provided
+        self.config_manager = LLMConfigManager()
+
+        # --- 从 LLMConfigManager 加载激活的配置 ---
+        active_config = self.config_manager.get_active_config()
+        config_api_key = None
+        config_api_url = None
+        config_model = None
+
+        if active_config:
+            config_api_key = active_config.get('api_key') # 已解密
+            config_api_url = active_config.get('api_url')
+            config_model = active_config.get('model')
+            active_name = self.config_manager.get_active_config_name()
+            self.logger.info(f"从配置管理器加载激活配置 '{active_name}': Key={'***' if config_api_key else 'None'}, URL='{config_api_url}', Model='{config_model}'")
+        else:
+            self.logger.info("没有找到激活的LLM配置，将尝试使用环境变量或默认值。")
+        # --- 加载结束 ---
+
+        # --- 设置最终使用的配置 ---
+        # 优先级: 构造函数参数 > 激活配置 > 环境变量 > 默认值
+
+        # API Key
+        self.api_key = api_key if api_key is not None else (config_api_key or os.environ.get('LLM_API_KEY', ''))
+
+        # API URL
+        default_api_url = 'https://api.openai.com/v1/chat/completions'
+        self.api_url = api_url if api_url is not None else (config_api_url or os.environ.get('LLM_API_URL', default_api_url))
+
+        # Correct VolcEngine URL if base path /api/v3 is provided (保持这个逻辑)
         if "volces.com" in self.api_url and self.api_url.endswith("/api/v3"):
             self.api_url += "/chat/completions"
             self.logger.info(f"自动修正VolcEngine API URL为: {self.api_url}")
-            
-        # 设置模型
-        self.model = model or os.environ.get('LLM_MODEL', 'gpt-3.5-turbo')
-        
-        # 默认参数
+
+        # --- Refined X-AI URL Correction ---
+        if "api.x.ai" in self.api_url:
+            # 移除末尾斜杠
+            corrected_url = self.api_url.rstrip('/')
+            target_suffix = "/v1/chat/completions"
+            v1_suffix = "/v1"
+
+            if not corrected_url.endswith(target_suffix):
+                if corrected_url.endswith(v1_suffix):
+                    # 如果以 /v1 结尾, 只添加 /chat/completions
+                    self.api_url = corrected_url + "/chat/completions"
+                    self.logger.info(f"修正 X-AI API URL (已包含 /v1): {self.api_url}")
+                else:
+                    # 否则添加完整的 /v1/chat/completions
+                    self.api_url = corrected_url + target_suffix
+                    self.logger.info(f"修正 X-AI API URL (添加 /v1/chat/completions): {self.api_url}")
+        # --- Correction End ---
+
+        # Model
+        default_model = 'gpt-3.5-turbo'
+        self.model = model if model is not None else (config_model or os.environ.get('LLM_MODEL', default_model))
+        # --- 设置结束 ---
+
+        # 默认参数 (保持不变)
         self.temperature = 0.7
         self.max_tokens = 2048
         self.timeout = 60
@@ -61,9 +104,12 @@ class LLMClient:
             return "anthropic"
         elif "localhost" in url_lower or "127.0.0.1" in url_lower:
             return "ollama"
+        elif "api.x.ai" in url_lower: # 添加对 X-AI 的识别
+            return "xai"
         else:
+            # 保持 generic 作为通用后备
             return "generic"
-    
+
     def analyze_news(self, news_item, analysis_type='摘要'):
         """分析新闻
         
@@ -570,10 +616,12 @@ class LLMClient:
             headers['anthropic-version'] = '2023-06-01'  # 使用适当的API版本
         elif self.api_type == "openai":
             headers['Authorization'] = f'Bearer {self.api_key}'
-        else:
+        elif self.api_type == "xai": # 添加 X-AI 的明确分支
+            headers['Authorization'] = f'Bearer {self.api_key}'
+        else: # generic 作为后备
             # 通用Bearer认证方式
             headers['Authorization'] = f'Bearer {self.api_key}'
-        
+
         return headers
     
     def _get_prompt(self, analysis_type, news_item):
@@ -581,15 +629,24 @@ class LLMClient:
         
         Args:
             analysis_type: 分析类型
-            news_item: 新闻数据
+            news_item: 新闻数据(字典或NewsArticle对象)
             
         Returns:
             str: 提示词
         """
-        title = news_item.get('title', '无标题')
-        source = news_item.get('source_name', '未知来源')
-        content = news_item.get('description', '无内容')
-        pub_date = news_item.get('pub_date', '未知日期')
+        # 处理字典或NewsArticle对象
+        if hasattr(news_item, 'title'):
+            # NewsArticle对象
+            title = news_item.title if news_item.title else '无标题'
+            source = news_item.source_name if news_item.source_name else '未知来源'
+            content = news_item.summary or news_item.content or '无内容'
+            pub_date = news_item.publish_time.strftime('%Y-%m-%d %H:%M:%S') if news_item.publish_time else '未知日期'
+        else:
+            # 字典兼容模式
+            title = news_item.get('title', '无标题')
+            source = news_item.get('source_name', '未知来源')
+            content = news_item.get('description', news_item.get('content', '无内容'))
+            pub_date = news_item.get('pub_date', news_item.get('publish_time', '未知日期'))
         
         if analysis_type == '摘要':
             return f"""
@@ -687,8 +744,9 @@ class LLMClient:
         Returns:
             str: 模拟的HTML结果
         """
-        title = news_item.get('title', '无标题')
-        
+        # 使用属性访问，兼容 NewsArticle 对象
+        title = news_item.title if hasattr(news_item, 'title') and news_item.title else '无标题'
+
         return f'''
         <div style="font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; padding: 15px; line-height: 1.5;">
             <h2 style="color: #1976D2; border-bottom: 1px solid #E0E0E0; padding-bottom: 8px;">{analysis_type}结果</h2>

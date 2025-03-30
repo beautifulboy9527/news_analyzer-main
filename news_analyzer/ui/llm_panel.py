@@ -36,14 +36,14 @@ class AnalysisThread(QThread):
 
 class LLMPanel(QWidget):
     """LLM分析面板组件"""
-    
-    def __init__(self, parent=None):
+
+    def __init__(self, llm_client: LLMClient, parent=None): # 添加 llm_client 参数
         super().__init__(parent)
-        
+
         self.logger = logging.getLogger('news_analyzer.ui.llm_panel')
-        self.llm_client = LLMClient()
+        self.llm_client = llm_client # 使用传入的实例
         self.current_news = None
-        
+
         self._init_ui()
     
     def _init_ui(self):
@@ -53,9 +53,9 @@ class LLMPanel(QWidget):
         
         # 标题标签
         title_label = QLabel("LLM分析")
-        title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        # title_label.setStyleSheet("font-weight: bold; font-size: 14px;") # 移除内联样式
         layout.addWidget(title_label)
-        
+
         # 控制面板
         control_layout = QHBoxLayout()
         
@@ -80,9 +80,10 @@ class LLMPanel(QWidget):
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
         layout.addWidget(self.progress_bar)
-        
+
         # 分析结果显示
         self.result_browser = QTextBrowser()
+        self.result_browser.setObjectName("llmResultBrowser") # 设置 objectName
         self.result_browser.setOpenExternalLinks(True)
         layout.addWidget(self.result_browser)
         
@@ -94,23 +95,23 @@ class LLMPanel(QWidget):
         """处理新闻分析请求
         
         Args:
-            news_item: 新闻数据字典
+            news_item: 新闻数据对象 (NewsArticle)
         """
-        # 保存当前新闻
+        # 保存当前新闻 (现在是 NewsArticle 对象)
         self.current_news = news_item
-        
+
         # 清空上次分析结果
         self.result_browser.setHtml("")
-        
+
         # 启用分析按钮
         self.analyze_button.setEnabled(True)
-        
-        # 显示消息
-        title = news_item.get('title', '无标题')[:30]
-        self.status_label.setText(f"已选择: {title}...")
-        
-        self.logger.debug(f"准备分析新闻: {title}...")
-    
+
+        # 显示消息 (使用属性访问)
+        title = news_item.title if news_item and news_item.title else '无标题'
+        self.status_label.setText(f"已选择: {title[:30]}...")
+
+        self.logger.debug(f"准备分析新闻: {title[:30]}...")
+
     def _on_analyze_clicked(self):
         """处理分析按钮点击事件"""
         if not self.current_news:
@@ -137,9 +138,11 @@ class LLMPanel(QWidget):
         self.analysis_thread.analysis_complete.connect(self._on_analysis_complete)
         self.analysis_thread.analysis_error.connect(self._on_analysis_error)
         self.analysis_thread.start()
-        
-        self.logger.info(f"开始{analysis_type}分析: {self.current_news.get('title', '')[:30]}...")
-    
+
+        # 使用属性访问记录日志
+        title = self.current_news.title if self.current_news and self.current_news.title else '无标题'
+        self.logger.info(f"开始{analysis_type}分析: {title[:30]}...")
+
     def _on_analysis_complete(self, result):
         """处理分析完成事件
         
@@ -157,9 +160,11 @@ class LLMPanel(QWidget):
         
         # 启用分析按钮
         self.analyze_button.setEnabled(True)
-        
-        self.logger.info(f"完成了新闻分析: {self.current_news.get('title', '')[:30]}...")
-    
+
+        # 使用属性访问记录日志
+        title = self.current_news.title if self.current_news and self.current_news.title else '无标题'
+        self.logger.info(f"完成了新闻分析: {title[:30]}...")
+
     def _on_analysis_error(self, error_msg):
         """处理分析错误事件
         
