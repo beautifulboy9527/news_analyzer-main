@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Logs
+logs/
+*.log
+
+# Data directory (contains sensitive configs like API keys)
+data/
+
+# Specific sensitive files (double ensure, though covered by data/)
+news_analyzer/data/llm_configs.json
+news_analyzer/data/.llm_key
+news_analyzer/data/.llm_salt
+钥匙不可用，请自备.md.txt
+
+# VS Code settings (optional but common)
+.vscode/
+
+# CSV files (optional, depends on use case, often contain data)
+*.csv
