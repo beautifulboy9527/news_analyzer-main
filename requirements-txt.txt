@@ -1,8 +1,0 @@
-PyQt5
-requests
-feedparser
-beautifulsoup4
-langdetect
-jieba
-cryptography
-PyQtWebEngine

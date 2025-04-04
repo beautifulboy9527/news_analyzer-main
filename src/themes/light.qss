@@ -1,0 +1,765 @@
+/* Light Theme for News Analyzer - Vibrant Orange Flat - v11 Green Update Button & Fixed Heights */
+
+/* --- Color Palette --- */
+/* Primary Accent: #FFA500 (Vibrant Orange) */
+/* Accent Hover:   #FFB733 */
+/* Accent Pressed: #E69500 */
+/* Background:     #FFFFFF (White) */
+/* Secondary BG:   #F0F0F0 (Very Light Grey) */
+/* Borders/Lines:  #CCCCCC (Light Grey) */
+/* Input Border Focus: #FFA500 */
+/* Primary Text:   #333333 (Dark Grey) */
+/* Secondary Text: #888888 (Medium Grey) */
+/* Selected Text:  #FFFFFF (White) */
+/* Disabled Text:  #AAAAAA */
+/* Disabled BG:    #F0F0F0 */
+/* Disabled Border:#DCDCDC */
+/* Update Button BG: #2ECC71 (Emerald Green) */ /* Changed to Green */
+/* Update Button Hover: #58D68D */ /* Lighter Green */
+/* Update Button Pressed: #28B463 */ /* Darker Green */
+/* Update Button Text: #FFFFFF */ /* White text on green */
+/* Update Button Disabled BG: #A9DFBF */ /* Lighter disabled green */
+/* Update Button Disabled Border: #A9DFBF */
+/* Chat User Bubble BG: #FFEBCD (Bisque) */
+/* Chat User Bubble Text: #A0522D (Sienna) */
+/* Chat User Bubble Border: #FFDAB9 (PeachPuff) */
+/* Chat AI Bubble BG: #F0F0F0 */
+/* Chat AI Bubble Text: #333333 */
+/* Chat AI Bubble Border: #CCCCCC */
+/* Error/Stop Color: #DC143C (Crimson Red) */
+/* Error/Stop Hover: #FF6347 (Tomato) */
+/* Error/Stop Pressed: #B22222 (Firebrick) */
+
+QWidget {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    font-size: 13px;
+    color: #333333; /* Dark Grey */
+    background-color: #FFFFFF; /* White */
+    border: none;
+    outline: none;
+    border-radius: 0px; /* Strict Flat */
+}
+
+QMainWindow, QDialog {
+    background-color: #FFFFFF;
+}
+
+QGroupBox {
+    font-weight: bold;
+    border: 1px solid #CCCCCC; /* Light Grey border */
+    border-radius: 0px;
+    margin-top: 15px;
+    padding: 15px 10px 10px 10px;
+    background-color: #FFFFFF;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 3px 8px;
+    left: 10px;
+    color: #333333;
+    background-color: #F0F0F0; /* Very Light Grey */
+    border: 1px solid #CCCCCC;
+    border-bottom: none;
+    border-radius: 0px;
+}
+
+QPushButton {
+    background-color: #F0F0F0; /* Very Light Grey */
+    border: 1px solid #CCCCCC; /* Light Grey border */
+    padding: 6px 12px; /* Standardized padding */
+    border-radius: 0px;
+    min-height: 30px; /* Standardized height */
+    max-height: 30px; /* Fixed height */
+    color: #333333;
+}
+
+QPushButton:hover {
+    background-color: #E0E0E0; /* Slightly darker grey */
+    border-color: #B0B0B0;
+}
+
+QPushButton:pressed {
+    background-color: #D0D0D0; /* Darker grey */
+    border-color: #A0A0A0;
+}
+
+QPushButton:disabled {
+    background-color: #F0F0F0;
+    color: #AAAAAA; /* Lighter grey for disabled text */
+    border-color: #DCDCDC;
+}
+
+/* Update News Button Style - Green */
+QPushButton#update_news_button {
+    background-color: #2ECC71; /* Emerald Green */
+    color: #FFFFFF; /* White text */
+    border: 1px solid #2ECC71; /* Match background */
+    font-weight: bold;
+    border-radius: 0px;
+    font-size: 16px; /* Adjusted font size */
+    padding: 10px 20px; /* Larger padding */
+    margin: 5px; /* Standard margin */
+    min-height: 40px; /* Fixed height */
+    max-height: 40px; /* Fixed height */
+    border-bottom-color: #28B463; /* Darker Green */
+    border-right-color: #28B463; /* Darker Green */
+}
+QPushButton#update_news_button:hover {
+    background-color: #58D68D; /* Lighter Green */
+    border-color: #58D68D;
+}
+QPushButton#update_news_button:pressed {
+    background-color: #28B463; /* Darker Green */
+    border-color: #28B463;
+}
+QPushButton#update_news_button:disabled {
+    background-color: #A9DFBF; /* Lighter disabled green */
+    border-color: #A9DFBF;
+    color: #FFFFFF;
+    font-weight: normal; /* Reset font weight */
+    font-size: 16px; /* Reset font size */
+    min-height: 40px;
+    max-height: 40px;
+}
+
+
+QLineEdit, QTextEdit, QPlainTextEdit, QTextBrowser {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 0px;
+    padding: 6px 8px; /* Standardized padding */
+    color: #333333;
+    /* min-height applied specifically below */
+}
+/* Apply fixed height specifically to QLineEdit */
+QLineEdit {
+    min-height: 30px; /* Standardized height */
+    max-height: 30px; /* Fixed height */
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QTextBrowser:focus {
+    border-color: #FFA500; /* Orange border on focus */
+}
+
+QListWidget, QTreeView, QTableView {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    alternate-background-color: #F8F8F8; /* Slightly off-white alternate */
+    border-bottom: 1px solid #BBBBBB; /* Ensure news list items have a border */
+    border-radius: 0px;
+    outline: none;
+}
+
+
+QListWidget::item, QTreeView::item, QTableView::item {
+    padding: 6px 8px;
+    border-radius: 0px;
+    border: none; /* Remove individual item borders */
+    outline: none;
+    border-bottom: 1px solid #E0E0E0; /* Add subtle separator for general lists */
+}
+/* Remove bottom border for last item if using separators */
+/* QListWidget::item:last-child, QTreeView::item:last-child, QTableView::item:last-child {
+    border-bottom: none;
+} */
+
+QListWidget::item:selected, QTreeView::item:selected, QTableView::item:selected {
+    background-color: #FF8C00; /* DarkOrange selection for better contrast */
+    color: #FFFFFF; /* White text */
+    border: none;
+    outline: none; /* Ensure no selection outline */
+}
+
+QHeaderView::section { /* Style for table/tree headers */
+    background-color: #F0F0F0; /* Very Light Grey */
+    padding: 5px 8px;
+    border: none;
+    border-bottom: 1px solid #CCCCCC; /* Separator line */
+    font-weight: bold;
+    color: #333333;
+    border-radius: 0px;
+}
+
+QStatusBar {
+    background-color: #F0F0F0;
+    color: #333333;
+    border: none;
+    border-top: 1px solid #CCCCCC;
+}
+
+QMenuBar {
+    background-color: #F0F0F0;
+    color: #333333;
+    border: none;
+    border-bottom: 1px solid #CCCCCC;
+}
+
+QMenuBar::item {
+    padding: 5px 12px;
+    background-color: transparent;
+    border-radius: 0px;
+}
+
+QMenuBar::item:selected {
+    background-color: #DCDCDC; /* Light grey selection */
+    color: #000000;
+}
+
+QMenu {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    padding: 5px 0;
+    border-radius: 0px;
+}
+
+QMenu::item {
+    padding: 6px 25px;
+    border-radius: 0px;
+    background-color: transparent;
+    color: #333333;
+}
+
+QMenu::item:selected {
+    background-color: #FFA500; /* Orange selection */
+    color: #FFFFFF;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #CCCCCC;
+    margin: 5px 0px;
+}
+
+/* --- ScrollBar --- */
+QScrollBar {
+    border: none;
+    background: transparent; /* Fully transparent track */
+    border-radius: 0px; /* Flat */
+}
+
+QScrollBar:vertical {
+    width: 8px; /* Thin */
+    margin: 0;
+}
+
+QScrollBar:horizontal {
+    height: 8px; /* Thin */
+    margin: 0;
+}
+
+QScrollBar::handle {
+    background: #CCCCCC; /* Light Grey handle */
+    border-radius: 0px; /* Flat */
+    min-height: 25px; /* Ensure minimum size */
+    min-width: 25px;
+}
+
+QScrollBar::handle:vertical {
+    min-height: 25px;
+}
+
+QScrollBar::handle:horizontal {
+    min-width: 25px;
+}
+
+QScrollBar::handle:hover {
+    background: #FFA500; /* Orange handle on hover */
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    border: none;
+    background: none;
+    width: 0px; /* Hide arrows */
+    height: 0px;
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+}
+/* --- End ScrollBar --- */
+
+
+QToolTip {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    color: #333333;
+    padding: 5px;
+    border-radius: 0px;
+    opacity: 255; /* Fully opaque */
+}
+
+QDialog {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 0px;
+}
+
+/* Specific Widgets */
+#Sidebar {
+    background-color: #F0F0F0; /* Very Light Grey */
+    border: none;
+    border-right: 1px solid #CCCCCC;
+}
+
+/* Sidebar Title Label Style */
+QWidget#Sidebar QLabel {
+    font-weight: bold;
+    font-size: 16px; /* Larger font size for title */
+    color: #333333; /* Dark Grey */
+    margin-bottom: 10px;
+    padding: 8px 0px 8px 12px;
+    border-bottom: 1px solid #CCCCCC; /* Separator */
+    background-color: #E8E8E8; /* Slightly darker than sidebar bg */
+    border-radius: 0px;
+}
+
+#Sidebar QListWidget {
+    border: none;
+    background-color: transparent;
+    margin-top: 5px; /* Space below title */
+}
+
+#Sidebar QListWidget::item {
+    border: none;
+    padding: 8px 12px;
+    border-radius: 0px;
+    color: #555555; /* Slightly darker grey for inactive items */
+}
+
+#Sidebar QListWidget::item:selected {
+    background-color: #FF8C00; /* DarkOrange selection */
+    color: #FFFFFF;
+    border: none;
+    border-radius: 0px; /* Flat selection */
+    margin: 0px; /* No margin for flat list */
+    padding: 8px 12px; /* Consistent padding */
+}
+
+#NewsListPanel QListWidget {
+    border: 1px solid #CCCCCC; /* Ensure border */
+    background-color: #FFFFFF;
+}
+
+/* Specific styling for news list items */
+QListWidget#newsListWidget::item {
+    padding: 8px 5px;
+    border-bottom: 1px solid #BBBBBB; /* More visible border */
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    color: #333333;
+}
+
+QListWidget#newsListWidget::item:selected {
+    background-color: #FF8C00; /* DarkOrange selection */
+    color: #FFFFFF;
+    border: none; /* Remove default border */
+    border-bottom: 1px solid #BBBBBB; /* Keep separator consistent */
+    padding: 8px 5px; /* Add padding consistent with normal items */
+}
+
+#LLMResultBrowser {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    padding: 10px;
+    border-radius: 0px;
+}
+
+/* Chat Panel Styles */
+#ChatPanel {
+    background-color: #FFFFFF;
+    border: 1px solid #CCCCCC;
+    border-radius: 0px;
+}
+
+QLabel#UserMessageLabel {
+    background-color: #FFEBCD; /* Light Orange/Bisque for user */
+    color: #A0522D; /* Sienna text */
+    border-radius: 4px; /* Slight rounding for chat bubbles */
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border: 1px solid #FFDAB9; /* PeachPuff border */
+    max-width: 75%; /* Ensure bubbles don't exceed 75% of the chat area width */
+    word-wrap: true; /* Enable text wrapping */
+    text-align: left; /* Align text to the left */
+    /* Align right if possible through layout */
+}
+
+QLabel#AssistantMessageLabel { /* Corrected selector */
+    background-color: #F0F0F0; /* Very light grey for AI */
+    color: #333333;
+    border: 1px solid #CCCCCC;
+    border-radius: 4px; /* Slight rounding for chat bubbles */
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    max-width: 75%; /* Ensure bubbles don't exceed 75% of the chat area width */
+    word-wrap: true; /* Enable text wrapping */
+    text-align: left; /* Align text to the left */
+    /* Align left if possible through layout */
+}
+
+QTextEdit#chatInput { /* Use objectName */
+    border: none;
+    /* border-top: 1px solid #CCCCCC; */ /* Removed top border */
+    border-radius: 0px;
+    background-color: #FFFFFF;
+    padding: 6px 8px; /* Standardized padding */
+    min-height: 28px; /* Base height for input */
+    max-height: 100px; /* Allow input box to expand up to 100px */
+    height: auto; /* Dynamically adjust height based on content */
+    overflow-y: auto; /* Add scroll if content exceeds max height */
+}
+
+QPushButton#chatSendButton { /* Use objectName */
+    /* Use default QPushButton style or make primary */
+    background-color: #FFA500; /* Orange */
+    color: #FFFFFF;
+    border: 1px solid #FFA500;
+    border-radius: 0px;
+    margin-left: 5px;
+    min-height: 42px; /* Match frame height */
+    max-height: 42px; /* Match frame height */
+    min-width: 42px; /* Make square */
+    max-width: 42px; /* Make square */
+    padding: 6px 12px; /* Standardized padding */
+}
+QPushButton#chatSendButton:hover {
+    background-color: #FFB733;
+    border-color: #FFB733;
+}
+QPushButton#chatSendButton:pressed {
+    background-color: #E69500;
+    border-color: #E69500;
+}
+
+QPushButton#chatStopButton {
+    background-color: #DC143C; /* Crimson Red */
+    color: #FFFFFF;
+    border: 1px solid #DC143C;
+    min-height: 42px; /* Match send button height */
+    max-height: 42px;
+    min-width: 42px; /* Match send button width */
+    max-width: 42px;
+    border-radius: 0px; /* Flat buttons */
+}
+QPushButton#chatStopButton:hover {
+    background-color: #FF6347; /* Tomato */
+    border-color: #FF6347;
+}
+QPushButton#chatStopButton:pressed {
+    background-color: #B22222; /* Firebrick */
+    border-color: #B22222;
+}
+
+QSplitter::handle {
+    background-color: #CCCCCC; /* Light Grey */
+}
+QSplitter::handle:vertical {
+    height: 1px;
+    margin: 2px 0;
+}
+QSplitter::handle:horizontal {
+    width: 1px;
+    margin: 0 2px;
+}
+QSplitter::handle:hover {
+    background-color: #FFA500; /* Orange on hover */
+}
+
+QTabWidget::pane {
+    border: 1px solid #CCCCCC;
+    border-top: none;
+    background-color: #FFFFFF;
+    border-radius: 0px;
+    padding: 10px;
+}
+
+QTabBar::tab {
+    background-color: #F0F0F0; /* Very Light Grey */
+    border: 1px solid #CCCCCC;
+    border-bottom: none;
+    padding: 7px 15px;
+    border-radius: 0px;
+    color: #888888; /* Medium Grey */
+    margin-right: 2px;
+    min-height: 25px; /* Fixed height */
+    max-height: 25px; /* Fixed height */
+}
+
+QTabBar::tab:selected {
+    background-color: #FFFFFF; /* White */
+    color: #FFA500; /* Orange text */
+    border-color: #CCCCCC;
+    border-bottom: 1px solid #FFFFFF; /* Connect to pane */
+    margin-bottom: -1px;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #E0E0E0;
+    color: #333333;
+}
+
+QProgressBar {
+    border: 1px solid #CCCCCC;
+    border-radius: 0px;
+    text-align: center;
+    background-color: #F0F0F0;
+    color: #333333;
+    font-size: 12px;
+    min-height: 20px; /* Ensure visibility */
+}
+
+QProgressBar::chunk {
+    background-color: #FFA500; /* Orange progress */
+    border-radius: 0px;
+    margin: 0px;
+}
+
+QSlider::groove:horizontal {
+    border: 1px solid #CCCCCC;
+    height: 4px; /* Thinner groove */
+    background: #F0F0F0;
+    margin: 2px 0;
+    border-radius: 0px;
+}
+
+QSlider::handle:horizontal {
+    background: #FFA500; /* Orange handle */
+    border: 1px solid #FFA500;
+    width: 12px; /* Smaller handle */
+    height: 12px;
+    margin: -5px 0; /* Adjust vertical margin for thinner groove */
+    border-radius: 6px; /* Keep handle circular */
+}
+QSlider::handle:horizontal:hover {
+    background: #FFB733;
+    border-color: #FFB733;
+}
+
+QSlider::groove:vertical {
+    border: 1px solid #CCCCCC;
+    width: 4px; /* Thinner groove */
+    background: #F0F0F0;
+    margin: 0 2px;
+    border-radius: 0px;
+}
+
+QSlider::handle:vertical {
+    background: #FFA500;
+    border: 1px solid #FFA500;
+    width: 12px;
+    height: 12px;
+    margin: 0 -5px; /* Adjust horizontal margin */
+    border-radius: 6px; /* Keep handle circular */
+}
+QSlider::handle:vertical:hover {
+    background: #FFB733;
+    border-color: #FFB733;
+}
+
+QComboBox {
+    border: 1px solid #CCCCCC;
+    border-radius: 0px;
+    padding: 6px 10px; /* Standardized padding */
+    min-height: 30px; /* Standardized height */
+    max-height: 30px; /* Fixed height */
+    background-color: #FFFFFF;
+    color: #333333;
+}
+
+QComboBox:focus {
+    border-color: #FFA500; /* Orange focus */
+}
+
+QComboBox:on { /* No shift needed */ }
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 25px; /* Slightly wider */
+    border-left-width: 1px;
+    border-left-color: #CCCCCC;
+    border-left-style: solid;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    background-color: #F0F0F0; /* Match button background */
+}
+QComboBox::down-arrow {
+    image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><polyline points="1,1 6,7 11,1" style="fill:none;stroke:%23333333;stroke-width:2"/></svg>'); /* Dark arrow */
+    width: 12px;
+    height: 8px;
+}
+QComboBox::drop-down:hover {
+    background-color: #E0E0E0; /* Match button hover */
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    color: #333333;
+    selection-background-color: #FFA500; /* Orange selection */
+    selection-color: #FFFFFF;
+    padding: 4px;
+    border-radius: 0px;
+    outline: 0;
+}
+QComboBox QAbstractItemView::item {
+    padding: 8px 10px; /* Match dark theme */
+    min-height: 25px;
+    border-radius: 0px;
+}
+QComboBox QAbstractItemView::item:selected {
+    background-color: #FFA500; /* Orange selection */
+    color: #FFFFFF;
+}
+QComboBox QAbstractItemView::item:hover {
+    background-color: #F0F0F0; /* Very light grey hover */
+    color: #333333;
+}
+
+QCheckBox, QRadioButton {
+     spacing: 8px;
+     color: #333333;
+     background-color: transparent;
+     padding: 6px 4px; /* Match button vertical padding */
+     min-height: 30px; /* Standardized height */
+     max-height: 30px; /* Fixed height */
+     /* Alignment handled in Specific Panel Adjustments */
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+     width: 16px;
+     height: 16px;
+     border-radius: 0px; /* Flat checkbox */
+     border: 1px solid #AAAAAA; /* Medium Grey border */
+     margin-top: 0px; /* Align indicator vertically */
+     background-color: #FFFFFF; /* White background */
+}
+QRadioButton::indicator {
+     border-radius: 8px; /* Circular radio */
+     margin-top: 0px; /* Align indicator vertically */
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+     border-color: #888888;
+}
+
+QCheckBox::indicator:checked {
+     border: 1px solid #FFA500; /* Orange border */
+     background-color: #FFA500; /* Orange fill */
+     image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,3" style="fill:none;stroke:%23FFFFFF;stroke-width:2"/></svg>'); /* White check */
+}
+QRadioButton::indicator:checked {
+     border: 1px solid #FFA500; /* Orange border */
+     background-color: #FFA500; /* Orange fill */
+     image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" style="fill:%23FFFFFF;"/></svg>'); /* White inner circle */
+}
+
+QCheckBox::indicator:disabled {
+     border: 1px solid #DCDCDC; /* Disabled border */
+     background-color: #F0F0F0; /* Disabled background */
+     image: none;
+}
+QRadioButton::indicator:disabled {
+     border: 1px solid #DCDCDC; /* Disabled border */
+     background-color: #F0F0F0; /* Disabled background */
+     image: none;
+}
+
+/* --- Specific Panel Adjustments --- */
+
+/* Search Panel Alignment & Fixed Height */
+#SearchPanel QLineEdit#searchInput,
+#SearchPanel QPushButton#searchButton,
+#SearchPanel QComboBox#searchOptionsCombo {
+    min-height: 30px; /* Ensure consistent height */
+    max-height: 30px; /* Fixed height */
+    margin-top: 0; /* Align vertically */
+    margin-bottom: 0;
+}
+
+/* Chat Panel Header Alignment & Fixed Height */
+#ChatPanel QLabel { /* Target the title label specifically if needed */
+    min-height: 25px; /* Fixed height for title */
+    max-height: 25px;
+}
+#ChatPanel QCheckBox#contextCheckbox {
+    margin-top: 5px; /* Add margin to prevent overlap */
+    margin-bottom: 0;
+    padding-top: 6px; /* Adjust padding to align text baseline */
+    padding-bottom: 6px;
+    min-height: 30px; /* Fixed height */
+    max-height: 30px; /* Fixed height */
+}
+#ChatPanel QPushButton#clearChatButton {
+    min-height: 30px; /* Match standard button height */
+    max-height: 30px; /* Fixed height */
+    padding: 6px 12px; /* Match standard button padding */
+    margin-top: 0; /* Align vertically */
+    margin-bottom: 0;
+}
+
+/* Chat Panel Input Alignment & Fixed Height */
+#ChatPanel QFrame#chatInputFrame {
+    min-height: 42px; /* Fixed height */
+    max-height: 42px; /* Fixed height */
+    border-radius: 0px; /* Flat frame */
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+}
+#ChatPanel QTextEdit#chatInput {
+    min-height: 28px; /* Base height for input */
+    max-height: 100px; /* Allow input box to expand up to 100px */
+    height: auto; /* Dynamically adjust height based on content */
+    overflow-y: auto; /* Add scroll if content exceeds max height */
+    padding: 6px 10px; /* Adjust padding */
+    border: none; /* Remove border inside frame */
+}
+#ChatPanel QPushButton#chatSendButton,
+#ChatPanel QPushButton#chatStopButton {
+    min-height: 42px; /* Match frame height */
+    max-height: 42px;
+    min-width: 42px; /* Make square */
+    max-width: 42px;
+    border-radius: 0px; /* Flat buttons */
+    margin-top: 0; /* Align vertically */
+    margin-bottom: 0;
+}
+#ChatPanel QPushButton#chatSendButton {
+    background-color: #FFA500; /* Orange */
+    color: #FFFFFF;
+    border: 1px solid #FFA500;
+}
+#ChatPanel QPushButton#chatSendButton:hover {
+    background-color: #FFB733;
+    border-color: #FFB733;
+}
+#ChatPanel QPushButton#chatSendButton:pressed {
+    background-color: #E69500;
+    border-color: #E69500;
+}
+#ChatPanel QPushButton#chatStopButton {
+    background-color: #DC143C; /* Crimson Red */
+    color: #FFFFFF;
+    border: 1px solid #DC143C;
+    min-height: 42px; /* Match send button height */
+    max-height: 42px;
+    min-width: 42px; /* Match send button width */
+    max-width: 42px;
+    border-radius: 0px; /* Flat buttons */
+}
+#ChatPanel QPushButton#chatStopButton:hover {
+    background-color: #FF6347; /* Tomato */
+    border-color: #FF6347;
+}
+#ChatPanel QPushButton#chatStopButton:pressed {
+    background-color: #B22222; /* Firebrick */
+    border-color: #B22222;
+}
+
+/* Tab Widget Panel Minimum Height (Attempt to reduce jitter) */
+QTabWidget > QWidget#LLMPanel, /* Assuming LLMPanel has objectName="LLMPanel" */
+QTabWidget > QWidget#ChatPanel { /* Assuming ChatPanel has objectName="ChatPanel" */
+    min-height: 400px; /* Adjust as needed */
+}

@@ -1,0 +1,10 @@
+.chat-bubble {
+    display: inline-block;
+    max-width: 70%; /* 限制气泡框最大宽度 */
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 15px;
+    background-color: #f0f0f0;
+    word-wrap: break-word; /* 自动换行 */
+    word-break: break-word; /* 防止长单词溢出 */
+}
