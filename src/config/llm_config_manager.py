@@ -1,5 +1,6 @@
 import logging
 from PyQt5.QtCore import QSettings
+from typing import List, Union, Optional
 
 logger = logging.getLogger('news_analyzer.config.manager')
 
@@ -17,7 +18,9 @@ class LLMConfigManager:
 
     def __init__(self):
         self.settings = QSettings("NewsAnalyzer", "NewsAggregator")
+        self.logger = logging.getLogger(__name__) # Use module name for logger
         logger.debug("LLMConfigManager initialized (QSettings Mode).")
+        self._ensure_default_configs_exist()
 
     def get_config_names(self) -> list:
         """获取所有已保存配置的名称列表。
@@ -81,6 +84,25 @@ class LLMConfigManager:
             "timeout": self.settings.value("timeout", 60, type=int),
         }
         self.settings.endGroup()
+
+        # --- Handle List of Keys for Gemini --- Added
+        # Check if this config is likely Gemini based on name or provider hint
+        provider_type_hint = self._determine_provider_type_string(name, config.get('api_url')) 
+        if provider_type_hint == 'google' and isinstance(config.get('api_key'), str):
+            api_key_str = config.get('api_key', '')
+            if ',' in api_key_str:
+                config['api_key'] = [key.strip() for key in api_key_str.split(',') if key.strip()]
+                logger.debug(f"Parsed multiple API keys for Gemini config '{name}'. Count: {len(config['api_key'])}")
+            elif api_key_str: # Single key string
+                config['api_key'] = [api_key_str] # Store as list even if single
+            else: # Empty string
+                config['api_key'] = [] # Empty list
+        elif provider_type_hint != 'google' and isinstance(config.get('api_key'), list):
+             # Ensure non-google providers don't have a list (data correction)
+             logger.warning(f"Config '{name}' (type: {provider_type_hint}) has a list of API keys, expected string. Using first key.")
+             config['api_key'] = config['api_key'][0] if config['api_key'] else ""
+        # --- End Handle List of Keys ---
+
         # 日志中隐藏密钥
         log_config = {k: v for k, v in config.items() if k != 'api_key'}
         log_config['api_key'] = '******' if config.get('api_key') else '<Not Set>'
@@ -104,7 +126,7 @@ class LLMConfigManager:
                 configs[name] = config
         return configs
 
-    def add_or_update_config(self, name: str, api_key: str = "", api_url: str = "", model: str = "", **kwargs):
+    def add_or_update_config(self, name: str, api_key: Union[str, List[str]] = "", api_url: str = "", model: str = "", **kwargs):
         """添加新配置或更新现有指定名称的 LLM 配置。
 
         将配置信息保存到 QSettings 中对应的分组下。
@@ -131,9 +153,20 @@ class LLMConfigManager:
             logger.error("Cannot add/update config: Name cannot be empty.")
             return False
 
+        # --- Handle List of Keys for Gemini --- Added
+        api_key_to_save = api_key
+        provider_type_hint = self._determine_provider_type_string(name, api_url)
+        if provider_type_hint == 'google' and isinstance(api_key, list):
+             api_key_to_save = ",".join(key.strip() for key in api_key if key.strip()) # Join list into CSV string
+             logger.debug(f"Saving multiple API keys as CSV string for Gemini config '{name}'.")
+        elif not isinstance(api_key, (str, type(None))):
+            logger.warning(f"API key for config '{name}' is not a string or list, converting to string.")
+            api_key_to_save = str(api_key)
+        # --- End Handle List of Keys ---
+
         config_path = f"{CONFIG_GROUP_PREFIX}/{name}"
         self.settings.beginGroup(config_path)
-        self.settings.setValue("api_key", api_key)
+        self.settings.setValue("api_key", api_key_to_save) # Save potentially joined string
         self.settings.setValue("api_url", api_url)
         self.settings.setValue("model", model)
         # 保存其他参数，确保类型正确
@@ -263,6 +296,187 @@ class LLMConfigManager:
                 return None
         logger.debug("No active LLM configuration set.")
         return None
+
+    def _ensure_default_configs_exist(self):
+        """Checks for essential default configs and adds them if missing."""
+        existing_names = self.get_config_names()
+        
+        # Define desired default configurations
+        default_configs_to_ensure = {
+            "Google Gemini (Flash)": {
+                "provider": "google",
+                "api_key": [ 
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***", "***REMOVED***",
+                    "***REMOVED***", "***REMOVED***"
+                ],
+                "api_url": "https://generativelanguage.googleapis.com",
+                "model": "gemini-1.5-flash-latest",
+                "temperature": 0.7,
+                "max_tokens": 2048,
+                "timeout": 60
+            },
+            # --- REMOVED PLACEHOLDER --- 
+            # "Placeholder (Please Configure)": { ... }
+            # --------------------------
+        }
+        
+        added_defaults = False
+        for name, config_details in default_configs_to_ensure.items():
+            if name not in existing_names:
+                self.logger.info(f"Default configuration '{name}' not found. Adding it.")
+                # Prepare kwargs, removing 'provider' as it's handled by type determination
+                kwargs_for_add = {k: v for k, v in config_details.items() if k not in ['name', 'provider']}
+                self.add_or_update_config(name=name, **kwargs_for_add)
+                added_defaults = True
+
+        if not existing_names and not added_defaults:
+             # If no configs existed AND no defaults were added (e.g., Gemini also existed)
+             # Now we don't force add anything if no defaults were needed.
+             self.logger.info("No configurations found and no default configurations needed to be added.")
+             # --- REMOVED FORCING PLACEHOLDER --- 
+             # placeholder_details = default_configs_to_ensure.get("Placeholder (Please Configure)")
+             # if placeholder_details:
+             #      kwargs_for_add = {k: v for k, v in placeholder_details.items() if k not in ['name', 'provider']}
+             #      self.add_or_update_config(name="Placeholder (Please Configure)", **kwargs_for_add)
+            # -------------------------------------
+        elif not added_defaults:
+            self.logger.debug("All default configurations already exist or were not needed.")
+
+    # Add the static method helper if it doesn't exist (or import if moved)
+    @staticmethod
+    def _determine_provider_type_string(config_name: Optional[str], api_url: Optional[str]) -> str:
+        """根据配置名称和URL确定用于选择Provider的类型字符串 (静态方法) - Duplicated for internal use"""
+        if not config_name and not api_url:
+            return "generic"
+
+        if config_name:
+            name_lower = config_name.lower()
+            if "openai" in name_lower: return "openai"
+            if "anthropic" in name_lower: return "anthropic"
+            if "google" in name_lower or "gemini" in name_lower: return "google"
+            if "mistral" in name_lower: return "mistral"
+            if "fireworks" in name_lower: return "fireworks"
+            if "ollama" in name_lower: return "ollama"
+            if "bailian" in name_lower: return "bailian"
+            if "dashscope" in name_lower: return "dashscope"
+            if "zhipu" in name_lower: return "zhipu"
+            if "xai" in name_lower or "grok" in name_lower: return "xai"
+            if "volcengine" in name_lower or "ark" in name_lower or "火山方舟" in config_name or "deepseek" in name_lower:
+                 return "volcengine_ark"
+
+        if api_url:
+            url_lower = api_url.lower()
+            if "openai.com" in url_lower: return "openai"
+            if "anthropic.com" in url_lower: return "anthropic"
+            if "googleapis.com" in url_lower: return "google"
+            if "mistral.ai" in url_lower: return "mistral"
+            if "fireworks.ai" in url_lower: return "fireworks"
+            if "localhost" in url_lower or "127.0.0.1" in url_lower: return "ollama"
+            if "bailian.aliyuncs.com" in url_lower: return "bailian"
+            if "dashscope.aliyuncs.com" in url_lower: return "dashscope"
+            if "bigmodel.cn" in url_lower: return "zhipu"
+            if "api.x.ai" in url_lower: return "xai"
+            if "volces.com" in url_lower: return "volcengine_ark"
+
+        return "generic"
 
 # --- 示例用法 (用于独立测试此模块) ---
 if __name__ == '__main__':
