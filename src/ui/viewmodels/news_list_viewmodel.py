@@ -32,6 +32,7 @@ class NewsListViewModel(QObject):
             app_service (AppService): 应用程序核心服务实例。
             parent (Optional[QObject]): 父对象，用于 Qt 对象树管理。
         """
+        print("DEBUG_PRINT: NewsListViewModel.__init__ entered", flush=True) # ADDED DEBUG PRINT
         super().__init__(parent)
         # --- Use root logger directly ---
         self.logger = logging.getLogger() # Get root logger
@@ -60,6 +61,7 @@ class NewsListViewModel(QObject):
 
     def _connect_signals(self):
         """连接必要的信号"""
+        print("DEBUG_PRINT: NewsListViewModel._connect_signals entered", flush=True) # ADDED DEBUG PRINT
         # 连接 AppService 的 news_cache_updated 信号 (更新后的缓存)
         self._app_service.news_cache_updated.connect(self._handle_app_news_refreshed)
         # 移除 AppService.read_status_changed 连接
@@ -386,8 +388,9 @@ class NewsListViewModel(QObject):
 
     @pyqtSlot(list) # 添加槽装饰器
     def _handle_app_news_refreshed(self, news_articles_data: list): # 重命名参数以示清晰
-        """处理来自 AppService 的 news_cache_updated 信号。"""
-        self.logger.info(f"NewsListViewModel._handle_app_news_refreshed: Received {len(news_articles_data)} articles from AppService.") # MODIFIED: Added log
+        """当AppService的缓存更新时调用，用新的完整列表更新ViewModel。"""
+        print("DEBUG_PRINT: NewsListViewModel._handle_app_news_refreshed entered", flush=True) # ADDED DEBUG PRINT
+        self.logger.info(f"NewsListViewModel._handle_app_news_refreshed: Received {len(news_articles_data)} articles from AppService.") # MODIFIED log
         # 假设 news_articles_data 已经是 NewsArticle 对象列表
         self._all_news = news_articles_data # 直接用 AppService 的完整缓存替换
         self.logger.info(f"NewsListViewModel._handle_app_news_refreshed: self._all_news updated, count: {len(self._all_news)}.") # MODIFIED: Added log

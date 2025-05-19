@@ -15,16 +15,15 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from .base_collector import BaseCollector
 from ..models import NewsSource
-from ..utils.date_utils import clean_date_string
-from ..config.logging_config import get_logger
+from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 DEFAULT_PENGPAI_CONFIG = {
     "base_url": "https://m.thepaper.cn/",
-    "content_selector": "div.index_cententWrap__Jv8jK",
-    "date_selector": "div.index_left__LfzyH > div.ant-space > div.ant-space-item:nth-child(1) > span",
-    "author_selector": "div.index_left__LfzyH > div:nth-child(1)",
+    "content_selector": "#__next > div > main > div > div.index_wrapper__mHU4q > div.index_summary__ONV_r,#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_cententWrapBox__bh0OY > div.index_cententWrap__Jv8jK",
+    "date_selector": "#__next > div > main > div > div.index_wrapper__mHU4q > div.index_headerContent__mOJJb > span.index_nowrap__rmdw_,#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_headerContent__sASF4 > div > div.ant-space.ant-space-horizontal.ant-space-align-center > div:nth-child(1) > span",
+    "author_selector": "#__next > div > main > div > div.index_wrapper__mHU4q > div.index_headerContent__mOJJb > span:nth-child(3),#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_headerContent__sASF4 > div > div.ant-space.ant-space-horizontal.ant-space-align-center > div:nth-child(2) > div",
     "wait_timeout": 15,
     "webdriver_profile_base_path": "data/webdriver_profiles",
     "headless": True,
@@ -37,7 +36,11 @@ DEFAULT_PENGPAI_CONFIG = {
     "disable_gpu": True,
     "no_sandbox": True,
     "disable_dev_shm_usage": True,
-    "page_load_strategy": "normal"
+    "page_load_strategy": "normal",
+    "image_selector": "#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_cententWrapBox__bh0OY > div.index_cententWrap__Jv8jK > img,#__next > div > main > div > div.index_wrapper__mHU4q > div.index_videoWrap__Rbzic > div > img",
+    "video_selector": "#__next > div > main > div > div.index_wrapper__mHU4q > div.index_videoWrap__Rbzic > div > video,#__next > div > main > div > div.index_wrapper__mHU4q > div.index_videoWrap__Rbzic > div > img",
+    "title_selector": "#__next > div > main > div > div.index_wrapper__mHU4q > h1,#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > h1",
+    "image_desc_selector": "#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_cententWrapBox__bh0OY > div.index_cententWrap__Jv8jK > p.image_desc"
 }
 
 class PengpaiCollector(BaseCollector):
@@ -69,7 +72,7 @@ class PengpaiCollector(BaseCollector):
         logger.info("旧配置文件清理完成。")
 
     def _lazy_init_driver(self):
-        logger.error("PENGPAI_LAZY_INIT_DRIVER_ENTERED")
+        logger.debug("PENGPAI_LAZY_INIT_DRIVER_ENTERED")
         if self.driver:
             try:
                 _ = self.driver.current_url
@@ -148,25 +151,25 @@ class PengpaiCollector(BaseCollector):
             logger.error(f"初始化 WebDriver 时发生未知错误: {e}", exc_info=True)
             self.driver = None
         logger.info("WebDriver 初始化代码块执行完毕。")
-        logger.error(f"PENGPAI_LAZY_INIT_DRIVER_RESULT: Driver is {'SET' if self.driver else 'NONE'}")
+        logger.debug(f"PENGPAI_LAZY_INIT_DRIVER_RESULT: Driver is {'SET' if self.driver else 'NONE'}")
 
     def collect(self, source: NewsSource, progress_callback: Optional[Callable[[int, int], None]] = None) -> List[Dict]:
-        logger.error("PENGPAI_COLLECT_METHOD_ENTERED")
+        logger.info("PENGPAI_COLLECT_METHOD_ENTERED")
         logger.info(f"PengpaiCollector.collect 方法开始执行，来源: {source.name}")
         final_articles: List[Dict] = []
         processed_links = set()
 
         try:
             self._lazy_init_driver()
-            logger.error(f"PENGPAI_COLLECT_AFTER_LAZY_INIT: Driver is {'SET' if self.driver else 'NONE'}")
+            logger.debug(f"PENGPAI_COLLECT_AFTER_LAZY_INIT: Driver is {'SET' if self.driver else 'NONE'}")
             if not self.driver:
                 logger.error("WebDriver 初始化失败，无法采集澎湃新闻。")
                 return final_articles
             
             logger.info(f"开始抓取澎湃新闻 (手机版): {source.name}")
-            logger.error(f"PENGPAI_COLLECT_BEFORE_DRIVER_GET: URL={self.config.get("base_url", DEFAULT_PENGPAI_CONFIG["base_url"])}")
+            logger.debug(f"PENGPAI_COLLECT_BEFORE_DRIVER_GET: URL={self.config.get('base_url', DEFAULT_PENGPAI_CONFIG['base_url'])}")
             self.driver.get(self.config.get("base_url", DEFAULT_PENGPAI_CONFIG["base_url"]))
-            logger.error("PENGPAI_COLLECT_AFTER_DRIVER_GET")
+            logger.debug("PENGPAI_COLLECT_AFTER_DRIVER_GET")
             WebDriverWait(self.driver, self.config.get("wait_timeout", DEFAULT_PENGPAI_CONFIG["wait_timeout"])).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'a[href^="/newsDetail_forward_"]'))
             )
@@ -246,7 +249,7 @@ class PengpaiCollector(BaseCollector):
             pass 
 
         logger.info(f"澎湃新闻抓取完成，初步获取 {len(final_articles)} 条")
-        logger.error(f"PENGPAI_COLLECT_METHOD_EXITING_NORMALLY with {len(final_articles)} items")
+        logger.info(f"PENGPAI_COLLECT_METHOD_EXITING_NORMALLY with {len(final_articles)} items")
         logger.debug(f"DEBUG - PengpaiCollector: collect 方法完成，最终返回 {len(final_articles)} 条新闻。前 3 条: {final_articles[:3]}")
         return final_articles
 
@@ -264,8 +267,12 @@ class PengpaiCollector(BaseCollector):
             "content": "",
             "pub_date": None,
             "author": None,
-            "summary": None
+            "summary": None,
+            "image_url": None,
+            "video_url": None,
+            "image_desc": None
         }
+
         max_retries = self.config.get("max_retries", DEFAULT_PENGPAI_CONFIG["max_retries"])
         retry_delay = self.config.get("retry_delay", DEFAULT_PENGPAI_CONFIG["retry_delay"])
 
@@ -296,14 +303,15 @@ class PengpaiCollector(BaseCollector):
                 except Exception as e_title:
                     logger.warning(f"详情页 {url}: 提取标题时发生错误: {e_title}")
 
-                content_selector = self.config.get("content_selector", DEFAULT_PENGPAI_CONFIG["content_selector"])
-                logger.info(f"尝试使用选择器 '{content_selector}' 定位内容容器...")
+                # Directly use DEFAULT_PENGPAI_CONFIG for content_selector
+                content_selector_from_default = DEFAULT_PENGPAI_CONFIG["content_selector"]
+                logger.info(f"尝试使用 DEFAULT_PENGPAI_CONFIG 的内容选择器 '{content_selector_from_default}' 定位内容容器...")
                 
                 content_container = WebDriverWait(self.driver, self.config.get("wait_timeout", DEFAULT_PENGPAI_CONFIG["wait_timeout"])).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, content_selector))
+                    EC.presence_of_element_located((By.CSS_SELECTOR, content_selector_from_default))
                 )
                 logger.info(f"成功定位到内容容器: {content_container.tag_name if content_container else 'None'}")
-                logger.debug(f"DEBUG - PengpaiCollector: 使用选择器 '{content_selector}' 定位内容容器结果: {'成功' if content_container else '失败'}")
+                logger.debug(f"DEBUG - PengpaiCollector: 使用选择器 '{content_selector_from_default}' 定位内容容器结果: {{'成功' if content_container else '失败'}}")
 
                 if content_container:
                     raw_html_content = content_container.get_attribute('innerHTML')
@@ -311,42 +319,72 @@ class PengpaiCollector(BaseCollector):
                     detail_data["content"] = raw_html_content
                     logger.info(f"详情页 {url}: 保留原始 innerHTML (前100字符): {detail_data['content'][:100].replace('\n', ' ')}")
 
-                    # 更新日期提取逻辑
-                    date_selectors = [
-                        self.config.get("date_selector", DEFAULT_PENGPAI_CONFIG["date_selector"]), # 原始选择器
-                        "#__next > div > main > div > div.index_wrapper__mHU4q > div.index_headerContent__mOJJb > span.index_nowrap__rmdw_", # 用户提供1
-                        "#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_headerContent__sASF4 > div > div.ant-space.ant-space-horizontal.ant-space-align-center > div:nth-child(1) > span" # 用户提供2
+                    # Directly use DEFAULT_PENGPAI_CONFIG for date_selector and combine with fallbacks
+                    date_selectors_combined = [
+                        DEFAULT_PENGPAI_CONFIG["date_selector"], # Forced from DEFAULT_PENGPAI_CONFIG
+                        "#__next > div > main > div > div.index_wrapper__mHU4q > div.index_headerContent__mOJJb > span.index_nowrap__rmdw_", 
+                        "#__next > div > main > div > div.index_wrapbox__VFyXe > div.index_wrapper__L_zqV > div.index_headerContent__sASF4 > div > div.ant-space.ant-space-horizontal.ant-space-align-center > div:nth-child(1) > span"
                     ]
                     date_text = None
-                    for selector in date_selectors:
-                        if not selector: continue # 跳过空选择器
+                    valid_selectors_str = ",".join(filter(None, date_selectors_combined))
+                    
+                    for selector_group in valid_selectors_str.split(','):
+                        selector = selector_group.strip()
+                        if not selector: continue
                         date_text = self._safe_get_text(self.driver, selector)
                         if date_text:
                             logger.info(f"详情页 {url}: 通过 CSS '{selector}' 提取到 date: '{date_text[:30]}...'")
-                            cleaned_date_str = clean_date_string(date_text)
-                            detail_data["pub_date"] = cleaned_date_str
+                            detail_data["pub_date"] = date_text # Pass raw date_text
                             break 
                     if not date_text: 
                         logger.warning(f"详情页 {url}: 未能通过任何预设CSS选择器提取到日期。")
                         detail_data["pub_date"] = None
 
-                    # 更新作者提取逻辑 (如果需要也可以定义多个选择器)
-                    author_selector = self.config.get("author_selector", DEFAULT_PENGPAI_CONFIG["author_selector"])
-                    # 可以仿照日期提取方式，为作者也设置一个选择器列表
-                    # author_selectors = [author_selector, "selector2", "selector3"]
-                    # for selector in author_selectors: ...
-                    author_text = self._safe_get_text(self.driver, author_selector)
+                    # Directly use DEFAULT_PENGPAI_CONFIG for author_selector
+                    author_text = self._safe_get_text(self.driver, DEFAULT_PENGPAI_CONFIG["author_selector"])
                     if author_text:
-                        cleaned_author_str = clean_date_string(author_text) # 注意：作者字段通常不需要 clean_date_string
-                        logger.info(f"详情页 {url}: 通过 CSS '{author_selector}' 提取到 author: '{cleaned_author_str[:30]}...'")
-                        detail_data["author"] = cleaned_author_str.replace("来源：", "").strip() # 简单清理作者
+                        logger.info(f"详情页 {url}: 通过 CSS '{DEFAULT_PENGPAI_CONFIG['author_selector']}' 提取到原始 author: '{author_text[:30]}...'")
+                        detail_data["author"] = author_text.replace("来源：", "").strip()
                     else:
-                        logger.warning(f"详情页 {url}: 未能通过 CSS '{author_selector}' 提取到作者。")
+                        logger.warning(f"详情页 {url}: 未能通过 CSS '{DEFAULT_PENGPAI_CONFIG['author_selector']}' 提取到作者。")
                         detail_data["author"] = None
                         
+                    # --- 新增：图片、视频、图片描述提取 ---
+                    # Directly use DEFAULT_PENGPAI_CONFIG for image, video, image_desc selectors
+                    image_url = None
+                    video_url = None
+                    image_desc = None
+                    try:
+                        image_els = self.driver.find_elements(By.CSS_SELECTOR, DEFAULT_PENGPAI_CONFIG["image_selector"])
+                        if image_els:
+                            image_url = image_els[0].get_attribute("src")
+                            detail_data["image_url"] = image_url
+                            logger.info(f"详情页 {url}: 提取到图片链接: {image_url}")
+                    except Exception as e_img:
+                        logger.warning(f"详情页 {url}: 提取图片链接时出错: {e_img}")
+                    try:
+                        video_els = self.driver.find_elements(By.CSS_SELECTOR, DEFAULT_PENGPAI_CONFIG["video_selector"])
+                        if video_els:
+                            video_url = video_els[0].get_attribute("src") or video_els[0].get_attribute("data-src")
+                            detail_data["video_url"] = video_url
+                            logger.info(f"详情页 {url}: 提取到视频链接: {video_url}")
+                    except Exception as e_vid:
+                        logger.warning(f"详情页 {url}: 提取视频链接时出错: {e_vid}")
+                    try:
+                        if DEFAULT_PENGPAI_CONFIG.get("image_desc_selector"):
+                            desc_els = self.driver.find_elements(By.CSS_SELECTOR, DEFAULT_PENGPAI_CONFIG["image_desc_selector"])
+                            if desc_els:
+                                image_desc = desc_els[0].text.strip()
+                                detail_data["image_desc"] = image_desc
+                                logger.info(f"详情页 {url}: 提取到图片描述: {image_desc}")
+                    except Exception as e_desc:
+                        logger.warning(f"详情页 {url}: 提取图片描述时出错: {e_desc}")
+                    # --- 图片、视频、图片描述提取结束 ---
+
                 else:
-                    logger.error(f"澎湃新闻源 '{source_name_for_log}' 的内容选择器 '{content_selector}' 失效，在 {url} 未找到匹配项")
-                    detail_data["content"] = f"错误：无法使用选择器 {content_selector} 在页面 {url} 获取内容。"
+                    # Use the selector from DEFAULT_PENGPAI_CONFIG in the error message as well
+                    logger.error(f"澎湃新闻源 '{source_name_for_log}' 的内容选择器 '{DEFAULT_PENGPAI_CONFIG['content_selector']}' 失效，在 {url} 未找到匹配项")
+                    detail_data["content"] = f"错误：无法使用选择器 {DEFAULT_PENGPAI_CONFIG['content_selector']} 在页面 {url} 获取内容。"
 
                 logger.info(f"详情页 {url}: 最终提取内容长度: {len(detail_data['content'] if detail_data['content'] else '')}")
                 return detail_data

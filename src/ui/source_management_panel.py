@@ -15,9 +15,9 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QListWidget,
                              QMessageBox, QDialog, QLineEdit, QFormLayout,
                              QSpacerItem, QSizePolicy, QDialogButtonBox, QTabWidget, # Use PySide6
                              QTextEdit, QAbstractItemView, QFileDialog, QStatusBar, QApplication, # Added QApplication
-                             QStyle # Import QStyle for standard icons
+                             QStyle, QMenu # Import QStyle for standard icons and QMenu for context menu
                              ) # Use PySide6
-from PySide6.QtCore import Qt, Signal as pyqtSignal, Slot as pyqtSlot # Use PySide6, alias Signal
+from PySide6.QtCore import Qt, Signal as pyqtSignal, Slot as pyqtSlot, QPoint # Use PySide6, alias Signal, ADD QPoint
 from PySide6.QtGui import QIcon, QAction, QColor, QPalette # Use PySide6, Import QColor, QPalette
 
 # Conditional import for type hinting to prevent circular imports
@@ -318,6 +318,7 @@ class SourceManagementPanel(QDialog):
             object_name="crawlerSourceList",
             selection_mode=QAbstractItemView.ExtendedSelection
         )
+        self.crawler_list_widget.setContextMenuPolicy(Qt.CustomContextMenu) # ENABLE CUSTOM CONTEXT MENU
         crawler_layout.addWidget(self.crawler_list_widget)
         self.tab_widget.addTab(crawler_tab, "网页爬虫")
 
@@ -390,6 +391,10 @@ class SourceManagementPanel(QDialog):
             self.remove_source_button.clicked.connect(self._remove_selected_source)
         if self.refresh_button: 
             self.refresh_button.clicked.connect(self._refresh_source_status)
+
+        # Connect custom context menu for crawler list
+        if self.crawler_list_widget: # ADDED CONNECTION
+            self.crawler_list_widget.customContextMenuRequested.connect(self._show_crawler_context_menu)
 
         # Connect to AppService signals
         self.app_service.sources_updated.connect(self.update_sources) 
@@ -1021,3 +1026,44 @@ class SourceManagementPanel(QDialog):
         self.logger.error(f"SourceManagementPanel: Received source_fetch_failed for source '{source_name}'. Error: {error_message}")
         QMessageBox.warning(self, f"源 '{source_name}' 错误", f"获取新闻源 '{source_name}' 时发生错误:\\n{error_message}")
     # +++ End of Added Slot +++
+
+    # +++ ADDED Context Menu for Crawler Sources +++
+    @pyqtSlot(QPoint)
+    def _show_crawler_context_menu(self, position: QPoint):
+        """Shows a context menu for the crawler list widget."""
+        if not self.crawler_list_widget:
+            return
+
+        item = self.crawler_list_widget.itemAt(position)
+        if not item:
+            return
+
+        source: Optional[NewsSource] = item.data(Qt.UserRole)
+        if not source or source.type != 'pengpai': # Only for Pengpai sources
+            return
+
+        menu = QMenu(self)
+        clear_config_action = QAction("清空自定义配置", self)
+        clear_config_action.triggered.connect(lambda: self._clear_pengpai_config(source.name))
+        menu.addAction(clear_config_action)
+
+        menu.exec_(self.crawler_list_widget.mapToGlobal(position))
+
+    def _clear_pengpai_config(self, source_name: str):
+        """Clears the custom configuration for a Pengpai news source."""
+        self.logger.info(f"UI Request: Clear custom_config for Pengpai source '{source_name}'.")
+        reply = QMessageBox.question(self,
+                                     "确认操作",
+                                     f"确定要清空新闻源 \"{source_name}\" 的所有自定义选择器配置吗？\n这将恢复为使用内置的默认选择器。",
+                                     QMessageBox.Yes | QMessageBox.No,
+                                     QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            try:
+                self.app_service.clear_source_custom_config(source_name)
+                QMessageBox.information(self, "操作成功", f"新闻源 '{source_name}' 的自定义配置已清空。")
+                # The app_service.sources_updated signal should refresh the UI if needed,
+                # or we can call self.update_sources() if a more immediate visual feedback is desired.
+            except Exception as e:
+                self.logger.error(f"Error clearing custom_config for '{source_name}' via UI: {e}", exc_info=True)
+                QMessageBox.warning(self, "操作失败", f"清空配置时发生错误: {e}")
+    # +++ END Context Menu for Crawler Sources +++

@@ -41,11 +41,11 @@ class SourceManager(QObject):
         # it means the DB was empty or didn't exist in a way that sources could be loaded.
         # In this case, populate with default sources.
         if not self.news_sources:
-            logger.info("SourceManager: No news sources found after loading from DB. Populating with default sources.")
+            logger.debug("SourceManager: No news sources found after loading from DB. Populating with default sources.")
             self._ensure_default_sources_exist() # This method handles adding to DB and internal list, and should emit sources_updated if changes occur.
         else:
             # If sources were loaded from DB, we still need to emit to notify listeners.
-            logger.info(f"SourceManager: Successfully loaded {len(self.news_sources)} sources from existing database. Emitting sources_updated.")
+            logger.debug(f"SourceManager: Successfully loaded {len(self.news_sources)} sources from existing database. Emitting sources_updated.")
             self.sources_updated.emit()
 
     # 辅助方法用于解析 ISO 时间字符串
@@ -105,18 +105,14 @@ class SourceManager(QObject):
 
     def _load_sources_from_db(self):
         """从数据库加载所有新闻源的配置。"""
-        logger.info("SourceManager: Loading news sources from database...")
-        print(f"SM_DEBUG: Entering _load_sources_from_db") # DEBUG
+        logger.debug("SourceManager: Loading news sources from database...")
         try:
             source_dicts_from_db = self.storage.get_all_news_sources()
-            print(f"SM_DEBUG: _load_sources_from_db - raw data from DB: {source_dicts_from_db}") # DEBUG
             
             temp_sources_list: List[NewsSource] = []
             for s_dict in source_dicts_from_db:
-                print(f"SM_DEBUG: _load_sources_from_db - processing dict: {s_dict}") # DEBUG
                 source_obj = self._create_news_source_from_dict(s_dict)
                 if source_obj:
-                    print(f"SM_DEBUG: _load_sources_from_db - created source obj: {source_obj.name}, id: {source_obj.id}") # DEBUG
                     # For now, is_user_added can be inferred. If it's not a known default, it's user-added.
                     # This might need refinement if default sources can be modified and re-identified.
                     # A more robust way would be a dedicated column in DB or a clear naming convention.
@@ -132,7 +128,7 @@ class SourceManager(QObject):
             self.news_sources = temp_sources_list
             self.news_sources.sort(key=lambda s: (s.type, s.name)) # Keep sorting
 
-            logger.info(f"SourceManager: Loaded {len(self.news_sources)} news sources from database.")
+            logger.debug(f"SourceManager: Loaded {len(self.news_sources)} news sources from database.")
 
             # REMOVED: Optional: Ensure default sources exist if DB was empty or they were deleted
             # self._ensure_default_sources_exist() # This is now handled in __init__ based on DB creation state
@@ -146,17 +142,13 @@ class SourceManager(QObject):
     def _ensure_default_sources_exist(self):
         """Checks if default sources are in the loaded list and adds them to DB if missing."""
         logger.debug("Ensuring default sources exist...")
-        print(f"SM_DEBUG: Entering _ensure_default_sources_exist") # DEBUG
         loaded_source_names = {s.name for s in self.news_sources}
-        print(f"SM_DEBUG: _ensure_default_sources_exist - loaded_source_names: {loaded_source_names}") # DEBUG
         
         # Check Pengpai
         pengpai_exists_in_loaded = self.PENGPAI_NAME in loaded_source_names
-        print(f"SM_DEBUG: _ensure_default_sources_exist - Pengpai \'{self.PENGPAI_NAME}\' in loaded_source_names: {pengpai_exists_in_loaded}") # DEBUG
 
         if not pengpai_exists_in_loaded: # Use the specific check
-            logger.info(f"Default source \'{self.PENGPAI_NAME}\' not found in DB. Adding it.")
-            print(f"SM_DEBUG: Pengpai source \'{self.PENGPAI_NAME}\' not found, attempting to add.") # DEBUG
+            logger.debug(f"Default source '{self.PENGPAI_NAME}' not found in DB. Adding it.")
             default_pengpai = NewsSource(
                 name=self.PENGPAI_NAME,
                 type=self.PENGPAI_TYPE,
@@ -171,7 +163,7 @@ class SourceManager(QObject):
         default_rss_sources_data = get_default_rss_sources()
         for default_data in default_rss_sources_data:
             if default_data['name'] not in loaded_source_names:
-                logger.info(f"Default RSS source '{default_data['name']}' not found in DB. Adding it.")
+                logger.debug(f"Default RSS source '{default_data['name']}' not found in DB. Adding it.")
                 rss_default = NewsSource(
                     name=default_data['name'],
                     type='rss',
@@ -199,11 +191,11 @@ class SourceManager(QObject):
                 break
         
         if found_source:
-            self.logger.info(f"SourceManager: update_source_status_in_cache for ID {source_id} ('{found_source.name}'). Incoming status: '{status}', last_error: '{last_error}', last_checked: {last_checked_time}") # +++ ADDED LOG +++
+            self.logger.debug(f"SourceManager: update_source_status_in_cache for ID {source_id} ('{found_source.name}'). Incoming status: '{status}', last_error: '{last_error}', last_checked: {last_checked_time}")
             found_source.status = status
             found_source.last_error = last_error
             found_source.last_checked_time = last_checked_time
-            self.logger.info(f"SourceManager: Updated status for source ID {source_id} ('{found_source.name}') in cache to '{found_source.status}'.") # MODIFIED LOG to show found_source.status, removed mention of emitting
+            self.logger.debug(f"SourceManager: Updated status for source ID {source_id} ('{found_source.name}') in cache to '{found_source.status}'.")
         else:
             self.logger.warning(f"SourceManager: Source ID {source_id} not found in cache for status update.")
 
@@ -215,7 +207,7 @@ class SourceManager(QObject):
 
     def add_source(self, source: NewsSource, _is_default_addition: bool = False): # Added internal flag
         """添加一个新的新闻源到数据库和内存列表。"""
-        logger.info(f"SourceManager: Attempting to add source '{source.name}'")
+        logger.debug(f"SourceManager: Attempting to add source '{source.name}'")
         if not source.name or not source.type:
             logger.error("SourceManager: Cannot add source, name or type is missing.")
             return None
@@ -246,7 +238,7 @@ class SourceManager(QObject):
                     logger.info(f"SourceManager: Successfully added source '{source.name}' with ID {new_id}.")
                 else:
                     self._defaults_added_flag = True # Mark that a default was added
-                    logger.info(f"SourceManager: Successfully added default source '{source.name}' with ID {new_id} (no immediate emit/sort).")
+                    logger.debug(f"SourceManager: Successfully added default source '{source.name}' with ID {new_id} (no immediate emit/sort).")
                 return source # Return the source object only on success
             else:
                 logger.error(f"SourceManager: Failed to add source '{source.name}' to database (storage returned None ID).")
@@ -258,7 +250,7 @@ class SourceManager(QObject):
 
     def remove_source(self, source_name: str):
         """从数据库和内存列表中移除指定名称的新闻源。"""
-        logger.info(f"SourceManager: Attempting to remove source '{source_name}'")
+        logger.debug(f"SourceManager: Attempting to remove source '{source_name}'")
         source_to_remove = self.get_source_by_name(source_name)
 
         if source_to_remove and source_to_remove.id is not None:
@@ -281,23 +273,18 @@ class SourceManager(QObject):
             
     def update_source(self, source_name: str, updated_data: dict, emit_signal: bool = True):
         """更新指定名称的新闻源的配置。"""
-        # logger.info(f"SM_UPDATE_DEBUG: Attempting to update source '{source_name}' with data: {updated_data}") # DEBUG
         source_to_update = self.get_source_by_name(source_name)
 
         if source_to_update and source_to_update.id is not None:
-            # logger.info(f"SM_UPDATE_DEBUG: Found source to update: {source_to_update.name}, id: {source_to_update.id}") # DEBUG
             try:
                 processed_data = updated_data.copy()
 
                 if 'name' in processed_data:
                     new_name_candidate = str(processed_data['name']).strip()
-                    # logger.info(f"SM_UPDATE_DEBUG: 'name' in processed_data. Candidate: '{new_name_candidate}'") # DEBUG
                     if not new_name_candidate:
-                        # logger.info("SM_UPDATE_DEBUG: Raising ValueError - 新闻源名称不能为空") # DEBUG
                         raise ValueError("新闻源名称不能为空")
 
                     is_different_name = new_name_candidate != source_to_update.name
-                    # logger.info(f"SM_UPDATE_DEBUG: Is new name different from old? {is_different_name} ('{new_name_candidate}' vs '{source_to_update.name}')") # DEBUG
 
                     # Check for conflict
                     conflict_exists = False
@@ -305,17 +292,13 @@ class SourceManager(QObject):
                         for s_iter in self.news_sources:
                             if s_iter is not source_to_update and s_iter.name == new_name_candidate:
                                 conflict_exists = True
-                                # logger.info(f"SM_UPDATE_DEBUG: Conflict found with source: {s_iter.name} (id: {s_iter.id})") # DEBUG
                                 break
                     
-                    # logger.info(f"SM_UPDATE_DEBUG: Conflict exists with other sources? {conflict_exists}") # DEBUG
                     if is_different_name and conflict_exists:
                         # 使用 f-string 构造更详细的错误信息
                         error_message = f"名称 '{new_name_candidate}' 已被其他源使用"
-                        # logger.info(f"SM_UPDATE_DEBUG: Raising ValueError - {error_message}") # DEBUG
                         raise ValueError(error_message)
                     processed_data['name'] = new_name_candidate
-                    # logger.info(f"SM_UPDATE_DEBUG: Name processed. processed_data['name'] = '{processed_data['name']}'") # DEBUG
 
                 original_type = source_to_update.type
                 original_url = source_to_update.url
@@ -350,7 +333,6 @@ class SourceManager(QObject):
                         if new_url_candidate != original_url and any(s.url == new_url_candidate and s is not source_to_update for s in self.news_sources if hasattr(s, 'url') and s.url):
                             error_message = f"URL '{new_url_candidate}' 已被其他 RSS 源使用"
                             raise ValueError(error_message) # Target
-                        # If all checks pass, new_url_candidate is valid and will be in processed_data['url'] if 'url' was a key
                     elif not original_url: # URL was not in processed_data, and original URL is empty for this RSS source
                         raise ValueError("RSS 源的 URL 不能为空") # Target
                 
@@ -401,7 +383,7 @@ class SourceManager(QObject):
                         logger.warning(f"SourceManager: Attempted to update non-existent attribute '{key}' on source '{source_name}'")
                 
                 if not has_changed:
-                    logger.info(f"SourceManager: No actual changes for source '{source_name}'. Update skipped.")
+                    logger.debug(f"SourceManager: No actual changes for source '{source_name}'. Update skipped.")
                     return
 
                 # Now prepare the dictionary for storage
@@ -454,11 +436,9 @@ class SourceManager(QObject):
         self.news_sources.clear()
         try:
             sources_data = self.storage.get_all_news_sources()
-            print(f"SM_DEBUG: _load_sources_from_storage - raw data from DB: {sources_data}") # DEBUG
             for data in sources_data:
                 try:
                     source = NewsSource.from_dict(data)
-                    print(f"SM_DEBUG: _load_sources_from_storage - loaded source: {source.name}, type: {source.type}, id: {source.id}") # DEBUG
                     self.news_sources.append(source)
                 except Exception as e:
                     self.logger.error(f"Error converting DB data to NewsSource: {data}. Error: {e}")
@@ -482,7 +462,7 @@ class SourceManager(QObject):
         try:
             success = self.storage.update_news_source(source_name, update_data)
             if success:
-                self.logger.info(f"Source '{source_name}' updated successfully in DB.")
+                self.logger.debug(f"Source '{source_name}' updated successfully in DB.")
                 # Optionally, update the in-memory object as well, though a full reload might be safer
                 # or rely on the caller to update the in-memory object passed to it.
             else:

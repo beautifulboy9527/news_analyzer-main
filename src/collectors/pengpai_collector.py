@@ -27,8 +27,10 @@ from PySide6.QtCore import QObject, Signal as pyqtSignal # 统一使用 PySide6
 import platform # 需要导入 platform
 import subprocess # 需要导入 subprocess
 from datetime import datetime, timedelta
+import threading # Add this import
 
 from src.models import NewsSource
+from src.collectors.pengpai import DEFAULT_PENGPAI_CONFIG # IMPORT ADDED
 
 class PengpaiCollector(QObject): # 继承 QObject 以使用信号
     """
@@ -40,9 +42,15 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
     MOBILE_URL = "https://m.thepaper.cn"
     _initial_cleanup_done = False # 类变量，用于标记启动清理是否已完成
 
+    _webdriver_instance = None
+    _webdriver_options = None
+    _is_webdriver_initialized = False
+    _lock = threading.Lock()
+
     def __init__(self):
         super().__init__() # 调用父类构造函数
         self.logger = logging.getLogger('news_analyzer.collectors.pengpai')
+        self.logger.setLevel(logging.DEBUG) # Set logger to DEBUG
 
         # --- 启动时清理旧的配置文件 ---
         if not PengpaiCollector._initial_cleanup_done:
@@ -261,16 +269,18 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
 
                     # 如果获取详情失败（例如内容为空或出错），则跳过此条新闻
                     if not detail_data.get('content') or "失败" in detail_data.get('content', "") or "无效" in detail_data.get('content', ""):
-                         self.logger.warning(f"获取详情页 {absolute_link} 失败或内容无效，跳过此新闻。错误信息: {detail_data.get('content')}")
-                         continue
+                         self.logger.warning(f"获取详情页 {absolute_link} 失败或内容无效，将终止抓取澎湃新闻源 '{source.name}' 的本次剩余文章。错误信息: {detail_data.get('content')}")
+                         break # 修改：不再继续尝试该源的其他文章
 
                     news_item = {
                         'title': title,
                         'link': absolute_link,
                         'summary': None, # 摘要可以考虑从正文生成，或在详情页提取
                         'pub_date': detail_data.get('pub_date'), # 使用详情页获取的日期
-                        'content': detail_data.get('content') # 使用详情页获取的内容
-                        # 'author': detail_data.get('author') # 可以考虑添加作者
+                        'content': detail_data.get('content'), # 使用详情页获取的内容
+                        'author': detail_data.get('author'), # MODIFIED: Ensure author is included from detail_data
+                        'source_name': source.name, # MODIFIED: Add source_name
+                        'category': source.category if hasattr(source, 'category') and source.category else "news" # MODIFIED: Add category, default to news
                     }
                     news_items.append(news_item)
                     self.logger.debug(f"提取到新闻: Title='{title[:30]}...', Link='{absolute_link}', Date='{news_item['pub_date']}', Content Length={len(news_item['content']) if news_item['content'] else 0}")
@@ -303,6 +313,7 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
         Returns:
             包含 'pub_date', 'content', 'author' 等的字典，如果提取失败则值为 None 或错误信息。
         """
+        overall_start_time = time.perf_counter() # TIMING START
         self.logger.info(f"进入 _fetch_detail 方法，URL: {url}") # 在方法入口添加日志
         detail_data = {'pub_date': None, 'content': None, 'author': None}
 
@@ -354,6 +365,8 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
                 options.add_argument('--disable-gpu')
                 options.add_argument('--no-sandbox')
                 options.add_argument('--disable-dev-shm-usage')
+                options.add_argument('--ignore-certificate-errors')
+                options.add_argument('--allow-running-insecure-content')
                 # 添加唯一的 user-data-dir 参数
                 options.add_argument(f"--user-data-dir={self.user_data_dir}")
                 # 添加额外参数尝试解决 session not created 问题 (这些可以保留，有助于稳定性)
@@ -436,11 +449,20 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
                  return detail_data
 
             self.logger.debug(f"WebDriver 状态: {self.driver.session_id if self.driver else 'None'}") # 记录 WebDriver 状态
+            
+            get_url_start_time = time.perf_counter() # TIMING
             self.driver.get(url)
+            get_url_duration = time.perf_counter() - get_url_start_time # TIMING
+            self.logger.debug(f"TIMING: driver.get(url) took {get_url_duration:.4f} seconds.") # TIMING - CHANGED TO DEBUG
+
             self.logger.info(f"WebDriver 已请求 URL: {url}") # 提升日志级别
             # --- 添加日志：记录页面源代码 ---
             # 等待页面某个基础元素加载完成
+            wait_body_start_time = time.perf_counter() # TIMING
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+            wait_body_duration = time.perf_counter() - wait_body_start_time # TIMING
+            self.logger.debug(f"TIMING: WebDriverWait for body took {wait_body_duration:.4f} seconds.") # TIMING - CHANGED TO DEBUG
+
             self.logger.info(f"详情页 {url}: Body 元素已加载") # 提升日志级别
 
             # --- 添加日志：记录页面源代码 ---
@@ -455,45 +477,83 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
             # --- 日志结束 ---
 
             # --- 使用传入的选择器配置 ---
-            # 提供默认值（如果需要，但最好依赖用户配置）
             # !!! 重要: 下面的默认选择器很可能已过时，需要根据当前 m.thepaper.cn 网站结构进行更新 !!!
             # !!! 请使用浏览器开发者工具检查实际新闻详情页的 HTML 结构来获取正确的选择器 !!!
-            # 更新默认选择器 (基于 2025-05 左右的结构，仍可能失效)
-            default_detail_selectors = {
-                # \'title_selector\': "h1.index_title__B8mhI", # 详情页标题，通常从列表页获取更可靠
-                # 假设新的选择器如下 (请根据实际情况替换)
-                'time_selector': 'div.newsbox_header_date', # 更新后的时间选择器 (假设)
-                'author_selector': 'span.name_text', # 更新后的作者选择器 (假设)
-                'content_selector': 'div.newsbox_body' # 更新后的正文容器选择器 (假设)
-            }
-            # 合并用户配置和默认值，用户配置优先
-            final_detail_selectors = {**default_detail_selectors, **selector_config}
+            # REMOVE THE HARDCODED default_detail_selectors HERE
+            # default_detail_selectors = {
+            #     'time_selector': 'div.newsbox_header_date', 
+            #     'author_selector': 'span.name_text', 
+            #     'content_selector': 'div.newsbox_body' 
+            # }
+            # final_detail_selectors = {**default_detail_selectors, **selector_config} # This line will also be affected
 
-            # 检查关键选择器是否存在
-            content_selector_str = final_detail_selectors.get('content_selector')
-            if not content_selector_str:
-                self.logger.error(f"澎湃新闻源 '{source_name}' 未配置详情页 'content_selector'，无法提取正文。")
-                self.selector_failed.emit(source_name) # 发出信号
-                detail_data['content'] = "错误：未配置内容选择器"
-                # 即使内容选择器未配置，也尝试提取其他字段，而不是直接返回
-                # return detail_data
+            # --- Corrected logic for content_selector ---
+            content_selector_list = []
+            if isinstance(selector_config, dict) and selector_config.get("content_selector"):
+                custom_cs = selector_config["content_selector"]
+                if isinstance(custom_cs, str) and custom_cs.strip():
+                    content_selector_list.append(custom_cs)
+                elif isinstance(custom_cs, list):
+                    content_selector_list.extend([s for s in custom_cs if isinstance(s, str) and s.strip()])
+
+            default_cs_from_config = DEFAULT_PENGPAI_CONFIG.get("content_selector")
+            if default_cs_from_config:
+                if isinstance(default_cs_from_config, str):
+                    default_cs_list = [s.strip() for s in default_cs_from_config.split(',') if s.strip()]
+                elif isinstance(default_cs_from_config, list): # Should not happen based on current DEFAULT_PENGPAI_CONFIG
+                    default_cs_list = [s for s in default_cs_from_config if isinstance(s, str) and s.strip()]
+                else:
+                    default_cs_list = []
+                
+                for ds in default_cs_list:
+                    if ds not in content_selector_list: # Avoid duplicates
+                        content_selector_list.append(ds)
+            
+            if not content_selector_list:
+                self.logger.error(f"澎湃新闻源 '{source_name}' 未配置 'content_selector' 且 DEFAULT_PENGPAI_CONFIG 中也无有效值。")
+                # self.selector_failed.emit(source_name) # Emitting later if all attempts fail
+                detail_data['content'] = "错误：内容选择器完全缺失"
+                # Fallback to body if absolutely nothing is defined, though this is unlikely to be useful.
+                content_selector_str_for_iteration = ['body'] 
+            else:
+                content_selector_str_for_iteration = content_selector_list
+
+            # Use content_selector_str_for_iteration in the loop below instead of content_selector_str
+            # --- 检查关键选择器是否存在 (using the new list) ---
+            # content_selector_str = final_detail_selectors.get('content_selector') # Old logic
+            # if not content_selector_str: # Old logic
+            #    self.logger.error(f"澎湃新闻源 '{source_name}' 未配置详情页 'content_selector'，无法提取正文。")
+            #    self.selector_failed.emit(source_name) 
+            #    detail_data['content'] = "错误：未配置内容选择器"
+            
+            self.logger.debug(f"PENGPAI_SELECTOR_DEBUG: Source custom_config for {source_name} ({url}): {selector_config}")
+            self.logger.debug(f"PENGPAI_SELECTOR_DEBUG: Compiled content_selectors for {url}: {content_selector_str_for_iteration}")
+
 
             # --- 尝试提取各个字段 ---
             content_html = None
 
             # 1. 优先提取 Content HTML
-            if content_selector_str:
-                possible_content_selectors = [s.strip() for s in content_selector_str.split(',') if s.strip()]
-                for i, current_cs_selector in enumerate(possible_content_selectors):
-                    self.logger.info(f"尝试使用内容选择器 #{i+1}/{len(possible_content_selectors)}: '{current_cs_selector}' 定位内容容器 (URL: {url})...")
+            content_extraction_start_time = time.perf_counter() # TIMING
+            # if content_selector_str: # Old logic
+            #    possible_content_selectors = [s.strip() for s in content_selector_str.split(',') if s.strip()] # Old logic
+            
+            if content_selector_str_for_iteration and not detail_data['content'] == "错误：内容选择器完全缺失": # Check if we have selectors to try
+                for i, current_cs_selector in enumerate(content_selector_str_for_iteration): # Use the new list
+                    self.logger.info(f"尝试使用内容选择器 #{i+1}/{len(content_selector_str_for_iteration)}: '{current_cs_selector}' 定位内容容器 (URL: {url})...")
                     try:
                         # 使用更长的等待时间，因为内容可能是动态加载的
+                        content_wait_start = time.perf_counter()
                         content_container = WebDriverWait(self.driver, 7).until( # Reduced wait time for iterative attempts
                             EC.visibility_of_element_located((By.CSS_SELECTOR, current_cs_selector))
                         )
+                        self.logger.debug(f"TIMING: WebDriverWait for content selector '{current_cs_selector}' took {time.perf_counter() - content_wait_start:.4f} s.") # TIMING - CHANGED TO DEBUG
+                        
+                        self.logger.info(f"SUCCESS: Content selector '{current_cs_selector}' succeeded for URL {url}.") # LOG SUCCESS
                         self.logger.info(f"成功定位到内容容器使用选择器 '{current_cs_selector}'")
                         
                         # 清理广告等 (保留之前的逻辑)
+                        remove_ads_start_time = time.perf_counter() # TIMING
                         selectors_to_remove = [
                             '.ad', '.ad-container', '.video-container', '.recommend', '.related-reads', 'script',
                             'style', '.content_open_app', '.go_app', '.news_open_app_fixed', '.toutiao', '.sponsor',
@@ -506,21 +566,29 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
                                 self.driver.execute_script(script, content_container)
                             except Exception as e_remove:
                                 self.logger.debug(f"移除元素 '{sel_remove}' 时出错 (可能元素不存在): {e_remove}")
+                        self.logger.debug(f"TIMING: Removing ads took {time.perf_counter() - remove_ads_start_time:.4f} seconds.") # TIMING - CHANGED TO DEBUG
 
+                        get_html_start_time = time.perf_counter() # TIMING
                         content_html = content_container.get_attribute('innerHTML').strip()
+                        self.logger.debug(f"TIMING: content_container.get_attribute('innerHTML') took {time.perf_counter() - get_html_start_time:.4f} seconds.") # TIMING - CHANGED TO DEBUG
+
                         self.logger.info(f"详情页 {url}: 获取到原始 innerHTML 使用选择器 '{current_cs_selector}' (前100字符): {content_html[:100]}")
                         detail_data['content'] = content_html # 存储成功提取的内容
                         break # 成功提取，跳出循环
                     except (TimeoutException, NoSuchElementException):
                         self.logger.warning(f"内容选择器 '{current_cs_selector}' 尝试失败 (URL: {url})。")
-                        if i == len(possible_content_selectors) - 1: # 如果是最后一个选择器且失败
-                            self.logger.error(f"澎湃新闻源 '{source_name}' 的所有内容选择器 '{content_selector_str}' 均失效，在 {url} 未找到匹配项。")
+                        if i == len(content_selector_str_for_iteration) - 1: # 如果是最后一个选择器且失败
+                            self.logger.error(f"FAILURE: All content selectors {content_selector_str_for_iteration} failed for URL {url}.") # LOG FAILURE
+                            self.logger.error(f"澎湃新闻源 '{source_name}' 的所有内容选择器均失效，在 {url} 未找到匹配项。")
                             self.selector_failed.emit(source_name)
-                            detail_data['content'] = f"错误：所有内容选择器 '{content_selector_str}' 均失效"
+                            detail_data['content'] = f"错误：所有内容选择器均失效" 
                             # 不在此处返回，继续尝试提取其他字段
-            else:
-                self.logger.error(f"澎湃新闻源 '{source_name}' 未配置详情页 'content_selector'，无法提取正文。")
-                detail_data['content'] = "错误：未配置内容选择器" # 标记错误，但仍继续
+            elif not detail_data['content'] == "错误：内容选择器完全缺失": # Only log if not already marked as completely missing
+                self.logger.error(f"澎湃新闻源 '{source_name}' 最终无有效内容选择器可供尝试。")
+                detail_data['content'] = "错误：无有效内容选择器" # 标记错误，但仍继续
+            
+            content_extraction_duration = time.perf_counter() - content_extraction_start_time # TIMING
+            self.logger.debug(f"TIMING: Content extraction section took {content_extraction_duration:.4f} seconds.") # TIMING - CHANGED TO DEBUG
 
             # 如果最终内容提取失败，记录一下
             if not detail_data.get('content') or "错误：" in str(detail_data.get('content')) :
@@ -528,59 +596,78 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
 
 
             # 2. 提取其他字段 (Date, Author) - Title 通常从列表页获取
+            other_fields_start_time = time.perf_counter() # TIMING
             # MODIFIED: Changed 'date' to 'pub_date' to match detail_data key
             field_mapping = {
-                'pub_date': final_detail_selectors.get('time_selector'), # 映射 time_selector 到 pub_date
-                'author': final_detail_selectors.get('author_selector'),
+                'pub_date': {'custom': selector_config.get('time_selector', ''), 'default': DEFAULT_PENGPAI_CONFIG.get('date_selector', '')},
+                'author': {'custom': selector_config.get('author_selector', ''), 'default': DEFAULT_PENGPAI_CONFIG.get('author_selector', '')},
             }
 
-            for field_key, selector_str_value in field_mapping.items(): # field_key is 'pub_date' or 'author'
-                 if not selector_str_value:
-                     self.logger.debug(f"详情页 {url}: 未配置 '{field_key}' 的选择器，跳过提取。")
+            for field_key, selector_sources in field_mapping.items(): # field_key is 'pub_date' or 'author'
+                 custom_selectors_str = selector_sources['custom']
+                 default_selectors_str = selector_sources['default']
+
+                 combined_selectors_list = []
+                 if custom_selectors_str:
+                     combined_selectors_list.extend(s.strip() for s in custom_selectors_str.split(',') if s.strip())
+                 if default_selectors_str:
+                     combined_selectors_list.extend(s.strip() for s in default_selectors_str.split(',') if s.strip())
+                
+                 # Remove duplicates while preserving order (Python 3.7+)
+                 unique_selectors = list(dict.fromkeys(combined_selectors_list))
+
+                 if not unique_selectors:
+                     self.logger.debug(f"详情页 {url}: 未配置或找到任何有效的 \'{field_key}\' 选择器 (自定义或默认)，跳过提取。")
                      detail_data[field_key] = None # 确保字段在 detail_data 中存在，即使为 None
                      continue
 
                  extracted_field_value = None
-                 possible_field_selectors = [s.strip() for s in selector_str_value.split(',') if s.strip()]
-                 
-                 for i, current_field_sel in enumerate(possible_field_selectors):
-                    self.logger.info(f"详情页 {url}: 提取字段 '{field_key}'，尝试选择器 #{i+1}/{len(possible_field_selectors)}: '{current_field_sel}'")
+                 self.logger.info(f"详情页 {url}: 提取字段 '{field_key}'，尝试组合/去重后的选择器列表: {unique_selectors}")
+
+                 for i, current_field_sel in enumerate(unique_selectors):
+                    self.logger.info(f"详情页 {url}: 提取字段 \'{field_key}\'，尝试选择器 #{i+1}/{len(unique_selectors)}: \'{current_field_sel}\'")
                     try:
-                        element = WebDriverWait(self.driver, 3).until( # Shorter timeout for these fields
+                        element = WebDriverWait(self.driver, 1).until( # MODIFIED: Shorter timeout for these fields (was 3)
                             EC.visibility_of_element_located((By.CSS_SELECTOR, current_field_sel))
                         )
                         
-                        text_content = element.text.strip()
-                        if not text_content:
+                        field_text = element.text.strip()
+                        if not field_text:
                             self.logger.warning(f"选择器 '{current_field_sel}' for '{field_key}' 找到元素但文本为空。")
                             continue # 尝试下一个选择器
 
                         if field_key == 'pub_date':
-                            parsed_time_obj = self._parse_relative_or_absolute_time(text_content)
-                            if parsed_time_obj:
-                                extracted_field_value = parsed_time_obj # Store datetime object
-                                self.logger.info(f"成功解析发布时间: {parsed_time_obj} (来自文本 '{text_content}' 使用选择器 '{current_field_sel}')")
+                            parsed_date = self._parse_relative_or_absolute_time(field_text)
+                            detail_data[field_key] = field_text # Assign raw text
+                            if parsed_date:
+                                self.logger.info(f"SUCCESS: Field '{field_key}' selector '{current_field_sel}' succeeded. Parsed: {parsed_date}, Raw: '{field_text}'. URL: {url}") # LOG SUCCESS
+                                self.logger.info(f"成功解析发布时间: {parsed_date} (来自文本 '{field_text}' 使用选择器 '{current_field_sel}')")
                             else:
-                                self.logger.warning(f"无法从文本 '{text_content}' (选择器 '{current_field_sel}') 解析日期。")
+                                self.logger.warning(f"Field '{field_key}' selector '{current_field_sel}' got text '{field_text}' but parsing failed. URL: {url}")
                         elif field_key == 'author':
-                            extracted_field_value = text_content
+                            extracted_field_value = field_text
+                            self.logger.info(f"SUCCESS: Field '{field_key}' selector '{current_field_sel}' succeeded. Value: '{extracted_field_value}'. URL: {url}") # LOG SUCCESS
                             self.logger.info(f"成功提取作者: {extracted_field_value} (使用选择器 '{current_field_sel}')")
                         
                         if extracted_field_value is not None:
                             detail_data[field_key] = extracted_field_value
-                            break # Success, move to next field_key
+                            break # Found and processed, exit selector loop
                         
                     except (TimeoutException, NoSuchElementException):
                         self.logger.warning(f"详情页 {url}: 查找元素失败，选择器: '{current_field_sel}' for field '{field_key}'")
-                        if i == len(possible_field_selectors) - 1: # If it's the last selector and it failed
+                        if i == len(unique_selectors) - 1: # If it's the last selector and it failed
+                            self.logger.error(f"FAILURE: All selectors for field '{field_key}' ({unique_selectors}) failed for URL {url}.") # LOG FAILURE
                             detail_data[field_key] = None # Set to None as all attempts failed
-                            self.logger.error(f"字段 '{field_key}' 的所有选择器 '{selector_str_value}' 均失效 (URL: {url})。")
-                            if field_key == 'pub_date': # Emit signal only if all time selectors fail
+                            self.logger.error(f"字段 '{field_key}' 的所有选择器 '{selector_sources['custom']}' 均失效 (URL: {url})。")
+                            if field_key == 'pub_date' or field_key == 'author': # Emit signal if all time or author selectors fail
                                 self.selector_failed.emit(source_name) 
                  
                  # Ensure field is in detail_data even if all selectors failed or it wasn't configured
                  if field_key not in detail_data:
                       detail_data[field_key] = None
+
+            other_fields_duration = time.perf_counter() - other_fields_start_time # TIMING
+            self.logger.debug(f"TIMING: Other fields (date/author) extraction took {other_fields_duration:.4f} seconds.") # TIMING - CHANGED TO DEBUG
 
             # --- 日志记录最终提取到的数据 ---
             self.logger.info(f"_fetch_detail 结果 for {url}: Date='{detail_data.get('pub_date')}', Author='{detail_data.get('author')}', Content Length={len(detail_data.get('content', '')) if detail_data.get('content') else 'None or Error'}")
@@ -602,6 +689,16 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
             if key not in detail_data:
                 detail_data[key] = None
 
+        # Ensure pub_date is a string if it was parsed to datetime, for AppService compatibility
+        if isinstance(detail_data.get('pub_date'), datetime):
+            self.logger.debug(f"Converting pub_date from datetime back to string for AppService: {detail_data['pub_date']}")
+            try:
+                detail_data['pub_date'] = detail_data['pub_date'].strftime('%Y-%m-%d %H:%M:%S')
+            except Exception as e_conv:
+                self.logger.error(f"Error converting pub_date datetime to string: {e_conv}. Leaving as datetime.")
+
+        overall_duration = time.perf_counter() - overall_start_time # TIMING
+        self.logger.debug(f"TIMING: _fetch_detail for {url} took {overall_duration:.4f} seconds overall.") # TIMING - CHANGED TO DEBUG
         self.logger.info(f"DEBUG - PengpaiCollector: _fetch_detail 方法返回: {detail_data}") # DEBUG LOG
         return detail_data
 
@@ -659,3 +756,46 @@ class PengpaiCollector(QObject): # 继承 QObject 以使用信号
         # 如果所有格式都解析失败
         self.logger.warning(f"无法识别的时间字符串格式: '{time_str}'")
         return None
+
+    def _init_webdriver(self):
+        self.logger.debug("PengpaiCollector._init_webdriver called.") # ADDED DEBUG LOG
+        if self.driver or self._webdriver_init_failed: # 如果已初始化或上次失败，则不再尝试
+            if self._webdriver_init_failed:
+                self.logger.warning("WebDriver 初始化先前已失败，本次跳过。")
+            else:
+                self.logger.info("WebDriver 实例已存在，跳过初始化。")
+            return
+
+        self.logger.info("开始初始化 Selenium WebDriver (Edge)...")
+        try:
+            edge_options = webdriver.EdgeOptions()
+            edge_options.add_argument("--headless")
+            edge_options.add_argument("--disable-gpu")
+            edge_options.add_argument("--no-sandbox") # 在某些环境下需要
+            edge_options.add_argument("--disable-dev-shm-usage") # 克服 Docker/CI 环境中的限制
+            edge_options.add_argument('--ignore-certificate-errors') # 忽略证书错误
+            edge_options.add_argument('--allow-running-insecure-content') # 允许不安全内容
+            edge_options.add_argument('--ignore-ssl-errors=true') # Added
+            edge_options.add_argument('--enable-unsafe-swiftshader') # Added for WebGL warning
+            edge_options.add_argument("--disable-blink-features=AutomationControlled") # 尝试减少被检测为机器人的几率
+            edge_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+            edge_options.add_experimental_option('useAutomationExtension', False)
+
+            # SPEED OPTIMIZATIONS START
+            edge_options.page_load_strategy = 'eager'
+            edge_options.add_experimental_option("prefs", {
+                "profile.managed_default_content_settings.images": 2, # 禁止加载图片
+            })
+            # SPEED OPTIMIZATIONS END
+
+            # SSL and Insecure Content Handling
+            edge_options.add_argument('--ignore-certificate-errors')
+            edge_options.add_argument('--allow-running-insecure-content')
+            edge_options.add_argument('--ignore-ssl-errors=true') # Added
+            edge_options.add_argument('--enable-unsafe-swiftshader') # Added for WebGL warning
+
+            # Unique profile for each instance to avoid conflicts
+            # ... existing code ...
+        except Exception as e:
+            self.logger.error(f"初始化 WebDriver 时发生错误: {e}", exc_info=True)
+            self._webdriver_init_failed = True # 设置失败标志

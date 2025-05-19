@@ -67,8 +67,8 @@ class NewsStorage:
         else:
             self.db_path = os.path.join(self.data_dir, db_name if db_name else self.DB_FILE_NAME)
         
-        self.logger.info(f"数据存储目录 (仅当 db_path 不是 :memory: 时相关): {self.data_dir if self.db_path != ':memory:' else 'N/A'}")
-        self.logger.info(f"SQLite 数据库路径: {self.db_path}")
+        self.logger.debug(f"数据存储目录 (仅当 db_path 不是 :memory: 时相关): {self.data_dir if self.db_path != ':memory:' else 'N/A'}")
+        self.logger.debug(f"SQLite 数据库路径: {self.db_path}")
 
         self.conn: Optional[sqlite3.Connection] = None
         self.cursor: Optional[sqlite3.Cursor] = None
@@ -92,7 +92,7 @@ class NewsStorage:
 
             # --- Try to add new columns if they don't exist (for existing DBs) ---
             if db_file_exists_prior_to_init: # Only try ALTER if the DB file already existed
-                self.logger.info("尝试为现有数据库添加新列 (如果不存在)...")
+                self.logger.debug("尝试为现有数据库添加新列 (如果不存在)...")
                 columns_to_add = {
                     "status": "TEXT DEFAULT 'unknown'",
                     "last_error": "TEXT",
@@ -118,7 +118,7 @@ class NewsStorage:
             # --- End column addition ---
 
             if not db_file_exists_prior_to_init: # If DB file did NOT exist (or is memory db)
-                self.logger.info(f"数据库文件未找到于 {self.db_path} (或为内存数据库)。正在创建表...")
+                self.logger.debug(f"数据库文件未找到于 {self.db_path} (或为内存数据库)。正在创建表...")
                 if self.conn: # Ensure connection was successful before trying to create tables
                     self._create_tables(ddl_file_path=self.actual_ddl_file_path)
                     self._db_just_created = True # Set flag indicating DB (and tables) were newly created
@@ -127,7 +127,7 @@ class NewsStorage:
                     self.logger.error("Cannot create tables: Database connection failed and no exception was propagated from _connect_db.")
                     raise sqlite3.OperationalError("Failed to connect to DB, cannot proceed with table creation.") # Critical
             else: # DB file already existed
-                 self.logger.info(f"Database file already exists at {self.db_path}. Tables will not be recreated.")
+                 self.logger.debug(f"Database file already exists at {self.db_path}. Tables will not be recreated.")
                  # Future: Add schema version check and migration logic here if needed.
         
         except sqlite3.Error as e: # Catch SQLite specific errors from _connect_db or _create_tables
@@ -139,7 +139,7 @@ class NewsStorage:
             if self.conn: self.conn.close()
             raise
         
-        self.logger.info(f"NewsStorage initialized. DB path: {self.db_path}, DB file existed prior: {db_file_exists_prior_to_init}, DB (tables) just created now: {self._db_just_created}")
+        self.logger.debug(f"NewsStorage initialized. DB path: {self.db_path}, DB file existed prior: {db_file_exists_prior_to_init}, DB (tables) just created now: {self._db_just_created}")
 
     def was_db_just_created(self) -> bool:
         """Returns True if the database tables were created during this NewsStorage instance's initialization."""
@@ -162,7 +162,7 @@ class NewsStorage:
             self.conn.row_factory = sqlite3.Row # Access columns by name
             self.conn.execute("PRAGMA foreign_keys = ON;") # Enforce foreign key constraints
             self.cursor = self.conn.cursor()
-            self.logger.info(f"成功连接到 SQLite 数据库: {self.db_path}")
+            self.logger.debug(f"成功连接到 SQLite 数据库: {self.db_path}")
         except sqlite3.Error as e:
             self.logger.error(f"连接 SQLite 数据库失败 {self.db_path}: {e}", exc_info=True)
             self.conn = None
@@ -1379,31 +1379,24 @@ class NewsStorage:
             return None
 
     def delete_articles_with_null_publish_time(self) -> int:
-        """Deletes all articles from the 'articles' table where publish_time is NULL.
-
-        Returns:
-            int: The number of rows deleted.
-        """
+        """Deletes articles from the database where publish_time is NULL. Returns count of deleted articles."""
         if not self.conn or not self.cursor:
-            self.logger.error("Database not connected. Cannot delete articles.")
+            self.logger.error("Database not connected. Cannot delete articles with null publish_time.")
             return 0
 
         sql = "DELETE FROM articles WHERE publish_time IS NULL;"
         deleted_rows = 0
         try:
             with self.lock:
-                self.logger.info("Attempting to delete articles with NULL publish_time...")
+                self.logger.debug("Attempting to delete articles with NULL publish_time...")
                 self.cursor.execute(sql)
                 deleted_rows = self.cursor.rowcount
                 self.conn.commit()
-                self.logger.info(f"Successfully deleted {deleted_rows} articles with NULL publish_time.")
+                if deleted_rows > 0:
+                    self.logger.info(f"Successfully deleted {deleted_rows} articles with NULL publish_time.")
+                else:
+                    self.logger.debug(f"No articles found with NULL publish_time to delete.")
+                return deleted_rows
         except sqlite3.Error as e:
-            self.logger.error(f"Failed to delete articles with NULL publish_time: {e}", exc_info=True)
-            if self.conn: # Check if conn still exists before trying to rollback
-                try:
-                    self.conn.rollback() # Rollback on error
-                    self.logger.info("Rollback successful after failed deletion.")
-                except sqlite3.Error as rb_err:
-                    self.logger.error(f"Error during rollback: {rb_err}", exc_info=True)
-            deleted_rows = -1 # Indicate error
-        return deleted_rows
+            self.logger.error(f"Error deleting articles with NULL publish_time: {e}", exc_info=True)
+            return 0

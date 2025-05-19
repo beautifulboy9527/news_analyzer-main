@@ -42,7 +42,7 @@ class NewsSource:
             "last_checked_time": self.last_checked_time.isoformat() if self.last_checked_time else None,
             "notes": self.notes,
             # status, last_error, error_count, consecutive_error_count are not in current news_sources DB schema
-            "custom_config": json.dumps(self.custom_config) if self.custom_config else None
+            "custom_config": json.dumps(self.custom_config) if self.custom_config is not None else None
         }
 
 @dataclass

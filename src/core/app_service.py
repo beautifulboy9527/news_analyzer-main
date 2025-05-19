@@ -15,6 +15,7 @@ from PySide6.QtCore import QObject, Signal as pyqtSignal, QSettings, Qt, Slot, P
 import os
 import shutil
 from dependency_injector import providers # <--- 正确的导入
+import uuid
 
 # 假设的导入路径，后续需要根据实际情况调整
 from src.models import NewsSource, NewsArticle # 恢复原始导入路径
@@ -29,6 +30,7 @@ from src.core.news_update_service import NewsUpdateService # Import new service
 from src.core.analysis_service import AnalysisService # Import AnalysisService
 from src.core.history_service import HistoryService # Import HistoryService
 # from src.storage.analysis_storage_service import AnalysisStorageService # REMOVE THIS IMPORT IF NO LONGER NEEDED
+from src.collectors.pengpai import DEFAULT_PENGPAI_CONFIG # Added for Pengpai config update
 
 # --- Helper Function (Moved to NewsUpdateService) ---
 # def convert_datetime_to_iso(obj):
@@ -93,15 +95,52 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
         # self._is_refreshing = False
         # self._cancel_refresh = False
 
-        self.logger.info("AppService __init__ complete (dependencies assigned).")
+        self.logger.debug("AppService __init__ complete (dependencies assigned).")
         self._connect_service_signals() # Call new method to connect signals
+        self._update_pengpai_config_if_needed() # Call method to update Pengpai config
+
+    def _update_pengpai_config_if_needed(self):
+        """Checks and updates the Pengpai news source's custom_config if it's outdated."""
+        self.logger.debug("AppService: Checking if Pengpai news source's custom_config needs an update...")
+        if not self.source_manager:
+            self.logger.warning("AppService: SourceManager not available, cannot update Pengpai config.")
+            return
+
+        PENGPAI_SOURCE_NAME = "澎湃新闻"
+        try:
+            pengpai_source = self.source_manager.get_source_by_name(PENGPAI_SOURCE_NAME)
+            if pengpai_source:
+                current_content_selector = pengpai_source.custom_config.get("content_selector")
+                default_content_selector = DEFAULT_PENGPAI_CONFIG.get("content_selector")
+
+                # Only update to DEFAULT_PENGPAI_CONFIG if custom_config is strictly None 
+                # (indicating it might be from an older version or never initialized properly).
+                # If custom_config is {} (empty dict), it means the user intentionally cleared it.
+                # If it's any other non-None dict, it's a user customization.
+                if pengpai_source.custom_config is None:
+                    self.logger.debug(f"AppService: Pengpai source ('{PENGPAI_SOURCE_NAME}') custom_config is None. Initializing with DEFAULT_PENGPAI_CONFIG.")
+                    self.source_manager.update_source(
+                        PENGPAI_SOURCE_NAME,
+                        {'custom_config': DEFAULT_PENGPAI_CONFIG} # Update with the full new default config
+                    )
+                    self.logger.debug(f"AppService: Successfully requested update for Pengpai source ('{PENGPAI_SOURCE_NAME}') configuration in SourceManager.")
+                elif pengpai_source.custom_config == {}:
+                    self.logger.debug(f"AppService: Pengpai source ('{PENGPAI_SOURCE_NAME}') custom_config is intentionally empty. No update to default needed.")
+                elif pengpai_source.custom_config == DEFAULT_PENGPAI_CONFIG:
+                    self.logger.debug(f"AppService: Pengpai source ('{PENGPAI_SOURCE_NAME}') configuration is already up-to-date with DEFAULT_PENGPAI_CONFIG.")
+                else: # custom_config is some other dictionary, presumably user-defined
+                    self.logger.debug(f"AppService: Pengpai source ('{PENGPAI_SOURCE_NAME}') has a custom_config that is not None, not empty, and not DEFAULT. Assuming user customization. No update from default.")
+            else:
+                self.logger.warning(f"AppService: Pengpai source ('{PENGPAI_SOURCE_NAME}') not found in SourceManager. Cannot update config.")
+        except Exception as e:
+            self.logger.error(f"AppService: Error during Pengpai config update check: {e}", exc_info=True)
 
     def _connect_service_signals(self):
         """Connect signals from various services to AppService handlers or forward them."""
-        self.logger.info("AppService: Connecting service signals...")
+        self.logger.debug("AppService: Connecting service signals...")
 
         if self.news_update_service:
-            self.logger.info(f"AppService: Attempting to connect NewsUpdateService signals (Instance: {self.news_update_service})...")
+            self.logger.debug(f"AppService: Attempting to connect NewsUpdateService signals (Instance: {self.news_update_service})...")
             try:
                 self.news_update_service.refresh_started.connect(self.refresh_started)
                 self.news_update_service.source_refresh_progress.connect(self._handle_source_refresh_progress)
@@ -110,17 +149,17 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
                 self.news_update_service.error_occurred.connect(self.source_fetch_failed)
                 # Connect the new signal for persisted status
                 self.news_update_service.source_status_persisted_in_db.connect(self._handle_source_status_persisted)
-                self.logger.info("AppService: Successfully connected all expected NewsUpdateService signals.")
+                self.logger.debug("AppService: Successfully connected all expected NewsUpdateService signals.")
             except Exception as e:
                 self.logger.error(f"AppService: Error connecting NewsUpdateService signals: {e}", exc_info=True)
         else:
             self.logger.error("AppService: NewsUpdateService not provided, cannot connect signals.")
 
         if self.source_manager:
-            self.logger.info(f"AppService: Attempting to connect SourceManager signals (Instance: {self.source_manager})...")
+            self.logger.debug(f"AppService: Attempting to connect SourceManager signals (Instance: {self.source_manager})...")
             try:
                 self.source_manager.sources_updated.connect(self.sources_updated)
-                self.logger.info("AppService: Successfully connected SourceManager.sources_updated to AppService.sources_updated.")
+                self.logger.debug("AppService: Successfully connected SourceManager.sources_updated to AppService.sources_updated.")
             except Exception as e:
                 self.logger.error(f"AppService: Error connecting SourceManager signals: {e}", exc_info=True)
         else:
@@ -132,7 +171,7 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
         # self.history_service.some_relevant_signal.connect(self._handle_history_service_signal)
         # self.logger.info("AppService: Connected HistoryService signals.")
 
-        self.logger.info("AppService: Service signal connections configured.")
+        self.logger.debug("AppService: Service signal connections configured.")
 
     # --- Signal Handlers / Slots ---
     @Slot(int, str, str, object)
@@ -186,23 +225,37 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
 
     def update_source(self, source_name: str, updated_data: dict):
         self.source_manager.update_source(source_name, updated_data)
+
+    def clear_source_custom_config(self, source_name: str):
+        """Clears the custom_config for a given news source."""
+        self.logger.info(f"AppService: Clearing custom_config for source '{source_name}'.")
+        try:
+            # Ensure the source exists before attempting to update
+            source_to_clear = self.source_manager.get_source_by_name(source_name)
+            if source_to_clear:
+                self.update_source(source_name, {'custom_config': {}})
+                self.logger.info(f"AppService: Successfully requested to clear custom_config for '{source_name}'.")
+            else:
+                self.logger.warning(f"AppService: Source '{source_name}' not found. Cannot clear custom_config.")
+        except Exception as e:
+            self.logger.error(f"AppService: Error clearing custom_config for '{source_name}': {e}", exc_info=True)
     # --- End Source Management ---
 
     # --- News Cache / Loading --- 
     def _load_initial_news(self):
         """加载初始新闻列表并更新缓存和通知UI"""
-        self.logger.info("加载初始新闻...")
+        self.logger.debug("加载初始新闻...")
         try:
             initial_news_data = self.storage.get_all_articles() # Use the correct method
             if initial_news_data:
-                self.logger.info(f"成功从数据库加载 {len(initial_news_data)} 条初始新闻。")
+                self.logger.debug(f"成功从数据库加载 {len(initial_news_data)} 条初始新闻。")
                 # --- Convert dicts to articles ---
                 initial_news_articles = []
                 for item_dict in initial_news_data:
                     article = self._convert_dict_to_article(item_dict) # Use AppService's converter for now
                     if article:
                         initial_news_articles.append(article)
-                self.logger.info(f"加载并转换了 {len(initial_news_articles)} 条初始新闻")
+                self.logger.debug(f"加载并转换了 {len(initial_news_articles)} 条初始新闻")
 
                 # --- Assign categories based on source config ---
                 source_map = {source.name: source for source in self.source_manager.get_sources()}
@@ -227,17 +280,17 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
                     except Exception as read_e:
                         self.logger.warning(f"检查已读状态失败 for '{article.title[:20]}...': {read_e}")
                         article.is_read = False
-                self.logger.info(f"已加载已读状态，其中 {read_count} 条标记为已读。")
+                self.logger.debug(f"已加载已读状态，其中 {read_count} 条标记为已读。")
                 # --- Update Cache and Emit Signal ---
                 self.news_cache = initial_news_articles # Update internal cache
                 self.logger.debug(f"内存缓存已更新 (初始加载)，包含 {len(self.news_cache)} 条新闻")
-                self.logger.info(f"_load_initial_news: Emitting news_cache_updated with {len(self.news_cache)} articles.")
+                self.logger.debug(f"_load_initial_news: Emitting news_cache_updated with {len(self.news_cache)} articles.")
                 self.news_cache_updated.emit(self.news_cache) # Emit the full cache
                 self.status_message_updated.emit(f"已加载 {len(self.news_cache)} 条历史新闻")
             else:
-                self.logger.info("未找到历史新闻")
+                self.logger.debug("未找到历史新闻")
                 self.news_cache = [] # 确保缓存为空
-                self.logger.info(f"_load_initial_news: Emitting news_cache_updated with {len(self.news_cache)} articles (empty cache).")
+                self.logger.debug(f"_load_initial_news: Emitting news_cache_updated with {len(self.news_cache)} articles (empty cache).")
                 self.news_cache_updated.emit(self.news_cache) # Emit empty cache
                 self.status_message_updated.emit("未找到历史新闻，请刷新")
         except AttributeError as ae:
@@ -310,14 +363,27 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
                 # 在创建 NewsArticle 对象前记录最终的 publish_time_dt
                 self.logger.info(f"AppService [{source_name}]: For article '{article_title_for_log}...', final publish_time_dt to be used for NewsArticle: {publish_time_dt} (type: {type(publish_time_dt)})")
                 
+                source_obj = self.source_manager.get_source_by_name(source_name)
+                
+                if not source_obj:
+                    self.logger.error(f"AppService [{source_name}]: Source object not found in SourceManager. Articles cannot be properly categorized.")
+                    # Fallback category if source_obj is None, though this case should ideally not happen
+                    # if sources are managed correctly.
+                    article_category_for_db = "uncategorized"
+                else:
+                    article_category_for_db = source_obj.category if source_obj.category and isinstance(source_obj.category, str) and source_obj.category.strip() else "uncategorized"
+                
+                # Convert to NewsArticle for cache and potential immediate use (though primarily we'll fetch from DB after this)
+                # The category used here is for the NewsArticle object instantiation.
+                # It might differ from item_dict.get('category') if the collector's source object was out of sync.
                 article = NewsArticle(
-                    title=item_dict.get('title', ''),
-                    link=item_dict.get('link', ''),
-                    summary=item_dict.get('summary'),
-                    content=item_dict.get('content'),
-                    source_name=item_dict.get('source_name', source_name), # Fallback to the overall source name
-                    category=item_dict.get('category', '未分类'), # MODIFIED: Use determined category
-                    publish_time=publish_time_dt,
+                    article_id=str(uuid.uuid4()), # Generate a new UUID for the article for internal cache keying before DB assign
+                    title=item_dict.get('title', '无标题'),
+                    link=item_dict.get('link'),
+                    source_name=source_name, # Use the overarching source_name from the refresh context
+                    # Use category from source_obj if available, otherwise from item_dict, finally fallback.
+                    category=article_category_for_db, # Use the determined category
+                    publish_time=publish_time_dt, # This is already UTC-aware or None
                     raw_data=item_dict # MODIFIED: Store the whole item_dict
                 )
                 if not article.link: # Skip articles with no link
@@ -468,7 +534,7 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
         source_name = item_dict.get('source_name', '未知来源')
         
         raw_publish_time_from_dict = item_dict.get('publish_time')
-        self.logger.info(f"_convert_dict_to_article (来源: {source_name}, 标题: {title[:30]}...): 从字典获取的原始 'publish_time' 字段: '{raw_publish_time_from_dict}' (类型: {type(raw_publish_time_from_dict)})")
+        self.logger.debug(f"_convert_dict_to_article (来源: {source_name}, 标题: {title[:30]}...): 从字典获取的原始 'publish_time' 字段: '{raw_publish_time_from_dict}' (类型: {type(raw_publish_time_from_dict)})")
 
         parsed_datetime = self._parse_datetime(raw_publish_time_from_dict) # 传递原始值给 _parse_datetime
 
@@ -518,7 +584,7 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
                 created_at=created_at,
                 updated_at=updated_at
             )
-            self.logger.info(f"AppService [_convert_dict_to_article]: Successfully converted dict to NewsArticle: '{article.title[:50]}...', final publish_time: {article.publish_time}")
+            self.logger.debug(f"AppService [_convert_dict_to_article]: Successfully converted dict to NewsArticle: '{article.title[:50]}...', final publish_time: {article.publish_time}")
             return article
         except Exception as e:
             self.logger.error(f"在 _convert_dict_to_article 中创建 NewsArticle 对象失败: {e}. 字典: {item_dict}", exc_info=True)
@@ -544,12 +610,12 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
             else:
                 dt_utc = dt_aware.astimezone(timezone.utc) # 已经是 aware, 统一转 UTC
             
-            self.logger.info(f"_parse_datetime: datetime 输入 '{date_input}' 成功标准化为 UTC: {dt_utc}")
+            self.logger.debug(f"_parse_datetime: datetime 输入 '{date_input}' 成功标准化为 UTC: {dt_utc}")
             return dt_utc
 
         # Original logic for string inputs
         if not date_input or not isinstance(date_input, str) or date_input.lower() == 'none':
-            self.logger.info(f"_parse_datetime: 输入日期值为空、非字符串/datetime 或为 'none'。Value: '{date_input}' (Type: {type(date_input)}). 返回 None。")
+            self.logger.debug(f"_parse_datetime: 输入日期值为空、非字符串/datetime 或为 'none'。Value: '{date_input}' (Type: {type(date_input)}). 返回 None。")
             return None
 
         # Rename date_input to date_string for the rest of the string parsing logic for clarity
@@ -577,7 +643,7 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
                 dt_aware = dt # 已经是 aware
 
             dt_utc = dt_aware.astimezone(timezone.utc)
-            self.logger.info(f"_parse_datetime: 日期字符串 '{date_string}' 成功解析并转换为 UTC: {dt_utc}")
+            self.logger.debug(f"_parse_datetime: 日期字符串 '{date_string}' 成功解析并转换为 UTC: {dt_utc}")
             return dt_utc
 
         except (ValueError, TypeError) as e_dateutil:
@@ -606,7 +672,7 @@ class AppService(QObject): # 继承 QObject 以便使用信号槽
                     else:
                         dt_aware = dt
                     dt_utc = dt_aware.astimezone(timezone.utc)
-                    self.logger.info(f"_parse_datetime: 日期字符串 '{date_string}' (使用 strptime fmt '{fmt}') 成功解析并转换为 UTC: {dt_utc}")
+                    self.logger.debug(f"_parse_datetime: 日期字符串 '{date_string}' (使用 strptime fmt '{fmt}') 成功解析并转换为 UTC: {dt_utc}")
                     return dt_utc
                 except ValueError:
                     continue # 尝试下一个格式
