@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Rule Name: 05_ui_structure
+Description:
+用户界面代码位于 `src/ui/`，使用 PySide6 构建，其主要结构如下：
+- `main_window.py` 或类似文件: (通常是 `MainWindow` 类) 应用主窗口，作为 UI 的入口和协调者。
+- `components/`: 可复用的基础 UI 控件和元素（例如自定义按钮、输入框等）。
+- `controllers/`: (根据目录结构存在) 可能包含处理用户输入、协调视图(Views)和视图模型(ViewModels)之间交互的逻辑。
+- `delegates/`: (根据目录结构存在) Qt中用于自定义模型数据在视图中如何显示和编辑的类。
+- `dialogs/`: 存放各种独立的对话框窗口，如 `NewsDetailDialog`, `SettingsDialog`, `SourceManagerDialog`, `LLMSettingsDialog`, `PromptManagerDialog`, `ImportExportDialog`, `AboutDialog`, `ConfirmDialog`。
+- `managers/`: 管理 UI 的特定方面，例如：
+    - `MenuManager`: 管理菜单栏。
+    - `PanelManager`: 管理主窗口中的各个面板布局和切换。
+    - `DialogManager`: 统一管理对话框的创建和显示。
+    - `ThemeManager`: 管理应用的主题（日间/夜间）。
+    - `UISettingsManager`: 管理UI相关的持久化设置。
+    - `StatusBarManager`: 管理状态栏信息。
+    - `WindowStateManager`: 管理窗口状态的保存与恢复。
+- `styles/`: 存放 QSS (Qt Style Sheets) 文件，用于定义应用的视觉样式。
+- `themes/`: 存放具体的主题定义文件（例如，颜色、字体配置）。
+- `utils/`: 包含 UI 层专用的工具函数或类。
+- `viewmodels/`: 视图模型，为视图提供数据和操作接口，处理表示逻辑，使视图本身保持简洁。例如 `NewsListViewModel`, `ChatPanelViewModel`, `BrowsingHistoryViewModel`。
+    - `viewmodels/viewmodels/`: (根据实际目录结构) 可能包含具体的 ViewModel 文件。
+- `views/`: 实际的 UI 面板和视图定义，它们构成了用户能直接交互的界面部分。例如 `NewsListPanel`, `ChatPanel`, `BrowsingHistoryPanel`, `ClassificationPanel` (分类与分析面板)。
+    - 根据 `project_structure.md`，一些原属于 `components` 的复杂部件如 `analysis_panel_components.py` 也可能在 `views/` 目录下。
+
+

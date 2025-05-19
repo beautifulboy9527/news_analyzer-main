@@ -1,0 +1,19 @@
+---
+description: 测试
+globs: 
+alwaysApply: false
+---
+Rule Name: 04_tests_structure
+Description:
+自动化测试位于根目录下的 `tests/` 文件夹，使用 `pytest` 和 `pytest-cov` 进行测试和覆盖率报告。
+- 测试目录结构通常镜像 `src/` 目录结构，以便清晰地组织测试用例。例如：
+    - `tests/collectors/`: 针对 `src/collectors/` 中数据收集器的测试。
+    - `tests/core/`: 针对 `src/core/` 中核心业务逻辑的单元和集成测试。
+    - `tests/ui/`: 针对 `src/ui/` 中用户界面组件和逻辑的测试。
+        - `tests/ui/viewmodels/`: ViewModel 的测试。
+        - `tests/ui/components/`: UI 组件的测试。
+        - (根据需要还可能包括 `controllers`, `managers` 等子目录的测试)
+- 强调单元测试覆盖核心逻辑和边界条件。
+- 鼓励进行必要的集成测试，验证模块间的交互。
+
+

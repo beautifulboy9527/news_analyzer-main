@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Environment variables
+.env*
+
+# IDEs / Editors
+.vscode/
+.idea/
+
+# Data / Logs / Cache
+data/webdriver_profiles/
+data/analysis/*.json
+data/analysis/*.db
+data/news/*.corrupted_*
+.pytest_cache/
+.coverage*
+logs/
+*.log
+news_data.db
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Secrets Files
+secrets_to_remove.txt* 

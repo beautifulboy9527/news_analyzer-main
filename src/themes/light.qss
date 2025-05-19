@@ -1,0 +1,57 @@
+/* src/themes/light.qss */
+
+/* General Styles */
+QWidget {
+    background-color: #FFFFFF; /* White background */
+    color: #333333; /* Dark gray text */
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    font-size: 10pt;
+}
+
+/* News List Panel Styles */
+#newsListWidget {
+    border: 1px solid #E0E0E0; /* Lighter border for the list */
+    background-color: #FFFFFF; /* White background for the list */
+}
+
+#newsListWidget::item {
+    padding: 8px 10px; /* Increase padding */
+    border-bottom: 1px solid #F0F0F0; /* Lighter separator */
+    /* Let the default text color (#333333) apply for better contrast */
+}
+
+#newsListWidget::item:hover {
+    background-color: #F5F5F5; /* Very light gray on hover */
+}
+
+#newsListWidget::item:selected {
+    background-color: #E0E0E0; /* Light gray when selected */
+    color: #000000; /* Black text when selected for better contrast */
+}
+
+/* Ensure the date filter group box has no border or background */
+QGroupBox#dateFilterGroup {
+    border: none;
+    background-color: transparent;
+    margin-top: 0px; /* Adjusted margin */
+    padding-top: 0px; /* Adjusted padding */
+}
+
+/* Text Browser Styles */
+QTextBrowser#NewsDetailContentBrowser {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    color: #333333;
+    min-height: 300px; /* Keep the minimum height */
+}
+
+/* Button Styles */
+QPushButton#updateNewsBtn {
+    padding: 5px 15px;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px;
+    background-color: #F8F8F8; /* Lighter button background */
+    color: #333333;
+    min-height: 25px; /* Ensure minimum height */
+    margin-left: 8px; /* Keep the left margin for alignment */
+} 

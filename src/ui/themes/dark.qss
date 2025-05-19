@@ -1,0 +1,2117 @@
+/* Futuristic Flat Dark Theme for News Analyzer - v11 Green Update Button */
+
+/* --- Color Palette --- */
+/* Primary Background: #121212 (Very Dark Gray) */
+/* Secondary Background/Surface: #1E1E1E (Dark Gray) */
+/* Tertiary Background/Hover: #2C2C2C (Slightly Lighter Gray) */
+/* Primary Text: #E0E0E0 (Light Gray) */
+/* Secondary Text: #A0A0A0 (Medium Gray) */
+/* Accent Color (Electric Blue): #00BFFF */
+/* Accent Hover: #33CFFF */ /* Lighter Hover */
+/* Accent Pressed: #009ACD */ /* Darker Pressed */
+/* Update Button Background: #2ECC71 (Emerald Green) */ /* Changed to Green */
+/* Update Button Hover: #58D68D */ /* Lighter Green */
+/* Update Button Pressed: #28B463 */ /* Darker Green */
+/* Update Button Text: #FFFFFF */ /* White text on green */
+/* Border Color: #333333 (Subtle Dark Gray) */
+/* Input Border Color: #383838 */
+/* Disabled Color Background: #2C2C2C */
+/* Disabled Color Text: #555555 */
+/* Error/Stop Color: #FF4136 */
+/* Error/Stop Hover: #FF6F66 */
+/* Error/Stop Pressed: #E63A2F */
+/* Selection Background: #007B9E */ /* Darker Accent */
+/* Selection Text: #FFFFFF */
+/* Calendar Weekend Text: #FF8C8C (Light Red) */
+/* Calendar Other Month Text: #666666 */
+/* Calendar Header Background: #252525 */
+/* Calendar Today Outline: #00BFFF */
+/* Category Title Background: #333333 */ /* Darker Gray for Title BG */
+/* Category Title Border: #00BFFF */
+
+/* --- Global Styles --- */
+QWidget {
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    font-size: 15px;  /* 增加全局字体大小 */
+    color: #E0E0E0;
+    background-color: #121212;
+    border: none;
+    outline: 0;
+}
+
+QMainWindow {
+    background-color: #121212;
+    border: 1px solid #2C2C2C;  /* 添加主窗口边框 */
+}
+
+/* 新闻列表样式 */
+QListWidget#newsListWidget {
+    background-color: #1E1E1E;
+    border: 1px solid #2C2C2C;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 15px;  /* 增加新闻列表字体大小 */
+}
+
+QListWidget#newsListWidget::item {
+    background-color: #1E1E1E;
+    border: 1px solid #2C2C2C;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 12px;
+    min-height: 100px;
+    font-size: 15px;  /* 增加新闻项目字体大小 */
+}
+
+/* 侧边栏样式 */
+#Sidebar {
+    background-color: #1E1E1E;
+    border-right: 1px solid #2C2C2C;  /* 添加侧边栏边框 */
+    min-width: 200px;
+    max-width: 200px;
+}
+
+#Sidebar QListWidget::item {
+    color: #E0E0E0;
+    font-size: 15px;  /* 增加侧边栏字体大小 */
+    padding: 12px 16px;
+    border-bottom: 1px solid #2C2C2C;
+    min-height: 40px;
+    max-height: 40px;
+}
+
+/* 菜单栏样式 */
+QMenuBar {
+    background-color: #1E1E1E;
+    border-bottom: 1px solid #2C2C2C;
+    font-size: 15px;  /* 增加菜单栏字体大小 */
+    min-height: 30px;
+}
+
+QMenuBar::item {
+    padding: 8px 12px;
+    background-color: transparent;
+    border-radius: 4px;
+}
+
+/* 工具栏样式 */
+QToolBar {
+    background-color: #1E1E1E;
+    border-bottom: 1px solid #2C2C2C;
+    padding: 4px;
+    font-size: 15px;  /* 增加工具栏字体大小 */
+}
+
+/* 搜索框样式 */
+QLineEdit {
+    background-color: #1E1E1E;
+    border: 1px solid #2C2C2C;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 15px;  /* 增加搜索框字体大小 */
+    min-height: 36px;
+}
+
+/* --- Basic Controls --- */
+
+QLabel {
+    color: #E0E0E0; /* Primary Text */
+    background-color: transparent;
+    border: none;
+    padding: 2px; /* Minimal padding */
+    min-height: 20px; /* Base min height for labels */
+}
+
+QPushButton {
+    background-color: #2C2C2C; /* Slightly Lighter Background for Buttons */
+    color: #E0E0E0; /* Primary Text */
+    border: none; /* Remove border for flatter look */
+    padding: 6px 12px; /* Standardized padding */
+    border-radius: 5px; /* Slightly more rounding */
+    min-height: 30px; /* Standardized height */
+    max-height: 30px; /* Fixed height */
+    text-align: center;
+}
+
+QPushButton:hover {
+    background-color: #3a3a3a; /* Tertiary Background */
+    /* border: none; */ /* Keep borderless */
+}
+
+QPushButton:pressed {
+    background-color: #009ACD; /* Accent Pressed (Darker) */
+    color: #FFFFFF;
+    /* border: none; */ /* Keep borderless */
+}
+
+QPushButton:disabled {
+    background-color: #2C2C2C; /* Disabled Background */
+    color: #555555; /* Disabled Text */
+    border: 1px solid #333333; /* Keep subtle border for disabled */
+}
+
+/* --- Special Buttons --- */
+
+/* Update News Button - Corrected objectName - Green Style */
+QPushButton#update_news_button {
+    background-color: #2ECC71; /* Emerald Green */
+    color: #FFFFFF; /* White text */
+    font-weight: bold;
+    border: 1px solid #2ECC71; /* Match background */
+    padding: 10px 20px; /* Adjusted padding */
+    border-radius: 8px; /* More rounding */
+    font-size: 16px;  /* 增加更新按钮字体大小 */
+    margin: 5px; /* Standard margin */
+    /* min-height: 40px; */ /* Remove fixed height */
+    /* max-height: 40px; */ /* Remove fixed height */
+    /* Subtle 3D effect */
+    border-bottom-color: #28B463; /* Darker Green */
+    border-right-color: #28B463; /* Darker Green */
+}
+
+QPushButton#update_news_button:hover {
+    background-color: #58D68D; /* Lighter Green */
+    border-color: #58D68D;
+}
+
+QPushButton#update_news_button:pressed {
+    background-color: #28B463; /* Darker Green */
+    border-color: #28B463;
+}
+
+QPushButton#update_news_button:disabled {
+    background-color: #2C2C2C; /* Standard disabled BG */
+    color: #555555; /* Standard disabled text */
+    border: 1px solid #333333; /* Standard disabled border */
+    font-weight: normal;
+    font-size: 16px; /* Reset font size */
+    margin: 5px;
+    /* min-height: 40px; */ /* Remove fixed height */
+    /* max-height: 40px; */ /* Remove fixed height */
+}
+
+/* Send Button */
+#chatSendButton {
+    background-color: #00BFFF; /* Accent Color */
+    border: none;
+    color: #121212; /* Dark text */
+    border-radius: 21px; /* Half of fixed height */
+    min-width: 42px; /* Fixed size */
+    max-width: 42px; /* Fixed size */
+    min-height: 42px; /* Fixed size */
+    max-height: 42px; /* Fixed size */
+    qproperty-iconSize: 20px 20px; /* Adjust icon size */
+    padding: 0; /* Remove padding if using icon */
+}
+#chatSendButton:hover {
+    background-color: #33CFFF; /* Lighter Accent Hover */
+}
+#chatSendButton:pressed {
+    background-color: #009ACD; /* Darker Accent Pressed */
+}
+#chatSendButton:disabled {
+    background-color: #2C2C2C;
+    qproperty-icon: url(); /* Consider a disabled icon */
+    color: #555555;
+}
+
+/* Stop Button */
+#chatStopButton {
+    background-color: #FF4136; /* Error/Stop Color */
+    border: none;
+    color: #FFFFFF; /* White text on red */
+    border-radius: 21px; /* Match send button */
+    min-width: 42px; /* Match send button */
+    max-width: 42px; /* Match send button */
+    min-height: 42px; /* Match send button */
+    max-height: 42px; /* Match send button */
+    font-weight: bold;
+    font-size: 16px; /* Adjust if needed */
+    padding: 0;
+}
+#chatStopButton:hover {
+    background-color: #FF6F66; /* Lighter Error Hover */
+}
+#chatStopButton:pressed {
+    background-color: #E63A2F; /* Darker Error Pressed */
+}
+
+/* --- Input Fields --- */
+QLineEdit, QTextEdit, QPlainTextEdit {
+    background-color: #1E1E1E; /* Darker Background for inputs */
+    border: 1px solid #383838; /* Slightly more visible border */
+    border-radius: 5px; /* Match button rounding */
+    padding: 6px 8px; /* Standardized padding */
+    color: #E0E0E0; /* Primary Text */
+    selection-background-color: #007B9E; /* Selection Background */
+    selection-color: #FFFFFF; /* Selection Text */
+    /* min-height applied specifically below */
+}
+
+/* Separate rule for QTextBrowser */
+QTextBrowser {
+    background-color: #1E1E1E;
+    border: 1px solid #383838;
+    border-radius: 5px;
+    padding: 6px 8px;
+    color: #E0E0E0;
+    selection-background-color: #007B9E;
+    selection-color: #FFFFFF;
+    /* No min/max height here */
+}
+
+/* Apply fixed height specifically to QLineEdit */
+QLineEdit {
+    min-height: 36px;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
+    border-color: #00BFFF; /* Accent Color on focus */
+}
+
+/* --- Chat Panel Specific --- */
+
+/* Chat Area Background */
+QScrollArea#chatArea {
+    background-color: #121212; /* Primary Background */
+    border: none;
+}
+
+QWidget#scrollAreaWidgetContents { /* The actual container for bubbles */
+     background-color: #121212;
+}
+
+/* Chat Bubble Base Style (Using QLabel for simplicity as per original) */
+QLabel#UserMessageLabel, QLabel#AssistantMessageLabel {
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    max-width: 75%;
+    word-wrap: true;
+    text-align: left;
+    font-size: 14px;  /* 增加聊天消息字体大小 */
+    background-color: #1E1E1E; /* Default assistant bubble color */
+    color: #E0E0E0;
+}
+
+QLabel#UserMessageLabel {
+    background-color: #00BFFF; /* Accent Color */
+    color: #121212; /* Dark text */
+    /* Alignment handled by layout */
+    /* margin-left: 25%; */ /* Commented out margin */
+}
+
+QLabel#AssistantMessageLabel {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    /* Alignment handled by layout */
+     /* margin-right: 25%; */ /* Commented out margin */
+}
+
+/* Style for links inside the labels */
+QLabel#UserMessageLabel a, QLabel#AssistantMessageLabel a {
+    color: #87CEFA; /* LightSkyBlue or keep Accent */
+    text-decoration: underline;
+}
+
+QLabel#UserMessageLabel a:hover, QLabel#AssistantMessageLabel a:hover {
+    color: #B0E0E6; /* PowderBlue */
+}
+
+/* Typing Indicator Style */
+QLabel#TypingIndicator {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #A0A0A0; /* Secondary Text */
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid #333333;
+    margin-left: 10px;
+    margin-bottom: 5px;
+}
+
+/* Chat Input Area Frame */
+QFrame#chatInputFrame {
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 21px; /* Half of fixed height */
+    background-color: #1E1E1E; /* Match input background */
+    padding: 0;
+    /* min-height: 42px; */ /* Commented out */
+    /* max-height: 42px; */ /* Commented out */
+}
+
+QTextEdit#chatInput {
+    background-color: transparent; /* Input field transparent */
+    border: none; /* Remove input field border */
+    border-radius: 0; /* No rounding needed inside frame */
+    padding: 8px 12px; /* Adjust padding slightly if needed */
+    color: #E0E0E0;
+    font-size: 14px;
+    min-height: 28px; /* Base height for input */
+    max-height: 100px; /* Allow input box to expand up to 100px */
+    height: auto; /* Dynamically adjust height based on content */
+    /* 使用Qt支持的属性替代overflow-y */
+    qproperty-verticalScrollBarPolicy: Qt::ScrollBarAsNeeded;
+    /* 确保滚动条样式一致性 */
+    qproperty-horizontalScrollBarPolicy: Qt::ScrollBarAsNeeded;
+}
+
+/* Selected News Label */
+#selectedNewsLabel {
+    color: #A0A0A0; /* Secondary Text */
+    font-style: italic;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    padding: 5px 8px; /* Slightly more padding */
+    background-color: #1E1E1E; /* Secondary Background */
+    border-radius: 3px;
+    border: 1px solid #333333;
+    min-height: 20px; /* Ensure it's visible */
+    /* Alignment handled in Specific Panel Adjustments */
+}
+
+/* --- Views (Lists, Trees) --- */
+QListView, QListWidget, QTreeView {
+    border: 1px solid #383838; /* Match input border */
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    alternate-background-color: transparent; /* No alternating color */
+    outline: 0; /* Remove focus outline */
+}
+
+QListView::item, QListWidget::item, QTreeView::item {
+    padding: 8px 6px; /* More vertical padding */
+    border-radius: 0px; /* Flat items */
+    background-color: transparent;
+    min-height: 25px; /* Ensure items are not too small */
+}
+
+QListView::item:alternate, QListWidget::item:alternate, QTreeView::item:alternate {
+    background-color: transparent; /* Ensure no alternate */
+}
+
+QListView::item:selected, QListWidget::item:selected, QTreeView::item:selected {
+    background-color: #007B9E; /* Selection Background (Darker Accent) */
+    color: #FFFFFF; /* Selection Text */
+    border-left: 3px solid #00BFFF; /* Accent indicator */
+    padding-left: 3px; /* Adjust padding for border */
+}
+QListView::item:selected:!active, QListWidget::item:selected:!active, QTreeView::item:selected:!active {
+    background-color: #2C2C2C; /* Tertiary Background for inactive selection */
+    color: #A0A0A0; /* Secondary Text */
+    border-left: 3px solid #555555; /* Disabled color indicator */
+    padding-left: 3px;
+}
+
+QTreeView::branch {
+    background: transparent;
+    /* Use simple +/- indicators */
+    image: none; /* Reset image */
+}
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+     border-image: none;
+     /* Consider using a simple text '+' or a minimal SVG */
+     /* image: url(...); */
+}
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings {
+     border-image: none;
+     /* Consider using a simple text '-' or a minimal SVG */
+     /* image: url(...); */
+}
+QTreeView::branch:hover {
+    background-color: #2C2C2C; /* Tertiary Background */
+}
+
+/* --- ScrollBars (KEEPING THIS BLOCK) --- */
+/* Let Python or default handle scrollbar styling for now */
+/*
+QScrollBar {
+    border: none;
+    background: transparent; // Fully transparent background
+    border-radius: 4px;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: transparent; // Fully transparent
+    width: 8px; // Slimmer scrollbar
+    margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: transparent; // Hidden handle
+    min-height: 30px;
+    border-radius: 4px; // Rounded handle
+    // border: 1px solid #00AA00; // TEST: Green border
+}
+// Show handle on hover over the entire scrollbar area
+QScrollBar:vertical:hover {
+     // Optional: slightly visible background track on hover
+     // background: #222222;
+}
+QScrollBar:vertical:hover > QScrollBar::handle:vertical {
+    background: #444444; // Visible dark grey handle on hover
+}
+// Make handle visible when scrolling (pressed)
+QScrollBar::handle:vertical:pressed {
+    background: #555555; // Slightly lighter when pressed
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: transparent; // Fully transparent
+    height: 8px; // Slimmer scrollbar
+    margin: 0;
+}
+QScrollBar::handle:horizontal {
+    background: transparent; // Hidden handle
+    min-width: 30px;
+    border-radius: 4px; // Rounded handle
+    // border: 1px solid #00AA00; // TEST: Green border
+}
+// Show handle on hover over the entire scrollbar area
+QScrollBar:horizontal:hover {
+     // Optional: slightly visible background track on hover
+     // background: #222222;
+}
+QScrollBar:horizontal:hover > QScrollBar::handle:horizontal {
+    background: #444444; // Visible dark grey handle on hover
+}
+// Make handle visible when scrolling (pressed)
+QScrollBar::handle:horizontal:pressed {
+    background: #555555; // Slightly lighter when pressed
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+    width: 0px;
+}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+}
+*/
+
+/* --- Tabs --- */
+QTabWidget::pane {
+    border: 1px solid #383838; /* Match input border */
+    border-top: none;
+    background-color: #121212; /* Primary Background */
+    padding: 15px; /* More padding inside tab content */
+}
+
+QTabBar {
+    border-bottom: 1px solid #383838; /* Line separating tabs from content */
+}
+
+QTabBar::tab {
+    background: transparent; /* Flat tabs */
+    border: none; /* No borders */
+    border-bottom: 3px solid transparent; /* Indicator space */
+    padding: 10px 18px; /* Adjust padding */
+    color: #A0A0A0; /* Secondary Text for inactive tabs */
+    margin-right: 4px; /* Space between tabs */
+    min-width: 80px;
+    min-height: 25px; /* Ensure consistent tab height */
+    max-height: 25px; /* Fixed tab height */
+}
+
+QTabBar::tab:selected {
+    color: #E0E0E0; /* Primary Text */
+    border-bottom: 3px solid #00BFFF; /* Accent Color indicator */
+    background-color: #1E1E1E; /* Slightly different bg for selected tab */
+    border-top-left-radius: 4px; /* Slight rounding */
+    border-top-right-radius: 4px;
+}
+
+QTabBar::tab:hover:!selected {
+    color: #E0E0E0; /* Primary Text on hover */
+    border-bottom: 3px solid #2C2C2C; /* Tertiary Background as indicator */
+}
+
+
+/* --- MenuBar & Menus --- */
+QMenuBar {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border-bottom: 1px solid #383838; /* Match input border */
+    padding: 2px 5px; /* Minimal padding */
+}
+
+QMenuBar::item {
+    background-color: transparent;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected { /* Hover */
+    background-color: #2C2C2C; /* Tertiary Background */
+}
+
+QMenuBar::item:pressed { /* When menu is open */
+     background-color: #121212; /* Primary Background */
+}
+
+QMenu {
+    background-color: #1E1E1E; /* Secondary Background */
+    border: 1px solid #383838; /* Match input border */
+    color: #E0E0E0; /* Primary Text */
+    padding: 5px;
+    border-radius: 4px;
+}
+
+QMenu::item {
+    padding: 8px 25px; /* Consistent padding */
+    border-radius: 4px;
+    background-color: transparent;
+}
+
+QMenu::item:selected { /* Hover */
+    background-color: #00BFFF; /* Accent Color */
+    color: #121212; /* Dark text */
+}
+
+QMenu::item:disabled {
+    color: #555555; /* Disabled Text */
+    background-color: transparent;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #383838; /* Match input border */
+    margin: 5px 5px; /* Adjusted margins */
+}
+
+QMenu::indicator { /* Checkmark space */
+    width: 18px;
+    height: 18px;
+    padding-left: 5px;
+}
+/* Simple checkmark indicator */
+QMenu::indicator:non-exclusive:checked {
+    /* Consider using a simple SVG or character */
+    /* Example: Use a text character */
+     /* content: "✓"; */
+     /* font-size: 14px; */
+     /* color: #E0E0E0; */
+     /* Or use SVG */
+     image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 4.5,9 10,3" style="fill:none;stroke:%23E0E0E0;stroke-width:2"/></svg>');
+}
+
+/* --- CheckBox & RadioButton --- */
+QCheckBox, QRadioButton {
+     spacing: 8px; /* Adjust space */
+     color: #E0E0E0; /* Primary Text */
+     background-color: transparent;
+     padding: 6px 4px; /* Match button vertical padding */
+     min-height: 30px; /* Standardized height */
+     max-height: 30px; /* Fixed height */
+     /* Alignment handled in Specific Panel Adjustments */
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+     width: 16px; /* Slightly smaller */
+     height: 16px;
+     border-radius: 3px; /* Less rounding for checkbox */
+     border: 1px solid #777777; /* Lighter border for better visibility */
+     margin-top: 0px; /* Align indicator vertically */
+     background-color: #1E1E1E; /* Secondary Background */
+}
+QRadioButton::indicator {
+     border-radius: 8px; /* More rounding for radio */
+     margin-top: 0px; /* Align indicator vertically */
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+     border-color: #AAAAAA;
+}
+
+QCheckBox::indicator:checked {
+     border: 1px solid #00BFFF; /* Accent border */
+     background-color: #00BFFF; /* Fill with accent color */
+     /* Simple checkmark SVG */
+     image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,3" style="fill:none;stroke:%23121212;stroke-width:2"/></svg>');
+}
+QRadioButton::indicator:checked {
+     border: 1px solid #00BFFF; /* Accent border */
+     background-color: #00BFFF; /* Fill with accent color */
+     /* Simple inner circle SVG */
+     image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" style="fill:%23121212;"/></svg>');
+}
+
+QCheckBox::indicator:disabled {
+     border: 1px solid #555555; /* Disabled border */
+     background-color: #2C2C2C; /* Disabled background */
+     image: none;
+}
+QRadioButton::indicator:disabled {
+     border: 1px solid #555555; /* Disabled border */
+     background-color: #2C2C2C; /* Disabled background */
+     image: none;
+}
+
+/* --- ComboBox --- */
+QComboBox {
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 5px; /* Match button rounding */
+    padding: 6px 10px; /* Standardized padding (same as button) */
+    min-height: 30px; /* Standardized height */
+    max-height: 30px; /* Fixed height */
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    selection-background-color: #007B9E; /* Selection Background */
+}
+
+QComboBox:disabled {
+    color: #555555;
+    background-color: #2C2C2C;
+    border-color: #333333;
+}
+
+QComboBox:focus {
+    border: 1px solid #00BFFF; /* Accent Color on focus - make border thicker */
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 25px; /* Slightly wider */
+    border-left: 1px solid #383838; /* Match input border */
+    background-color: #2C2C2C; /* Match button background */
+    border-top-right-radius: 5px; /* Match parent */
+    border-bottom-right-radius: 5px; /* Match parent */
+}
+
+QComboBox::down-arrow {
+    image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><polyline points="1,1 6,7 11,1" style="fill:none;stroke:%23E0E0E0;stroke-width:2"/></svg>'); /* Slightly larger arrow */
+    width: 12px;
+    height: 8px;
+}
+QComboBox::down-arrow:disabled {
+    image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><polyline points="1,1 6,7 11,1" style="fill:none;stroke:%23555555;stroke-width:2"/></svg>');
+}
+
+QComboBox::drop-down:hover {
+    background-color: #3a3a3a; /* Match button hover */
+}
+
+QComboBox QAbstractItemView { /* The dropdown list */
+    background-color: #1E1E1E; /* Match ComboBox background */
+    border: 1px solid #383838; /* Match input border */
+    color: #E0E0E0; /* Primary Text */
+    selection-background-color: #007B9E; /* Match selection color */
+    selection-color: #FFFFFF; /* White text on selection */
+    padding: 4px; /* Padding around items */
+    border-radius: 4px; /* Slight rounding */
+    outline: 0;
+}
+QComboBox QAbstractItemView::item {
+    padding: 8px 10px; /* Slightly more vertical padding */
+    min-height: 25px; /* Ensure items are not too small */
+    border-radius: 3px; /* Rounding for items */
+}
+QComboBox QAbstractItemView::item:selected {
+    background-color: #007B9E; /* Match selection color */
+    color: #FFFFFF;
+}
+QComboBox QAbstractItemView::item:hover {
+    background-color: #2C2C2C; /* Tertiary Background on hover */
+    color: #E0E0E0;
+}
+
+/* --- Slider (KEEPING AND REFINING THIS BLOCK) --- */
+/* Let Python or default handle slider styling for now */
+/*
+QSlider {
+    min-height: 20px; // Provide some space
+}
+
+QSlider::groove:horizontal {
+    border: 1px solid #2C2C2C; // Subtle groove border
+    height: 6px; // Groove thickness
+    background: #252525; // Darker groove background
+    margin: 2px 0;
+    border-radius: 3px;
+}
+
+QSlider::handle:horizontal {
+    // background: #555555; // Default: Subtle gray handle
+    background: #00FF00; // TEST: Bright green
+    // border: 1px solid #666666; // Subtle border
+    border: 1px solid #00AA00; // TEST: Green border
+    width: 14px; // Handle width
+    height: 14px; // Handle height
+    margin: -4px 0; // Adjust vertical position
+    border-radius: 7px; // Make it circular
+    // Remove opacity and transition
+}
+
+// Hide hover effects for test
+//
+//QSlider:hover::handle:horizontal {
+//    background: #00BFFF; // Accent color handle on hover
+//    border: 1px solid #33CFFF; // Lighter accent border on hover
+//}
+//QSlider::handle:horizontal:pressed {
+//    background: #009ACD; // Darker Accent Pressed
+//    border: 1px solid #00BFFF;
+//}
+//
+
+
+QSlider::sub-page:horizontal {
+    background: #007B9E; // Darker accent for filled part
+    border: 1px solid #2C2C2C;
+    height: 6px;
+    border-radius: 3px;
+}
+
+QSlider::add-page:horizontal {
+    background: #252525; // Match groove background
+    border: 1px solid #2C2C2C;
+    height: 6px;
+    border-radius: 3px;
+}
+
+// Add vertical slider styles if needed, matching horizontal logic
+QSlider::groove:vertical {
+    border: 1px solid #2C2C2C;
+    width: 6px;
+    background: #252525;
+    margin: 0 2px;
+    border-radius: 3px;
+}
+QSlider::handle:vertical {
+    // background: #555555; // Default: Subtle gray handle
+    background: #00FF00; // TEST: Bright green
+    // border: 1px solid #666666;
+    border: 1px solid #00AA00; // TEST: Green border
+    width: 14px;
+    height: 14px;
+    margin: 0 -4px; // Adjust horizontal position
+    border-radius: 7px;
+}
+// Hide hover effects for test
+//
+//QSlider:hover::handle:vertical {
+//    background: #00BFFF;
+//    border: 1px solid #33CFFF;
+//}
+//QSlider::handle:vertical:pressed {
+//    background: #009ACD;
+//    border: 1px solid #00BFFF;
+//}
+//
+
+QSlider::sub-page:vertical {
+    background: #007B9E;
+    border: 1px solid #2C2C2C;
+    width: 6px;
+    border-radius: 3px;
+}
+QSlider::add-page:vertical {
+    background: #252525;
+    border: 1px solid #2C2C2C;
+    width: 6px;
+    border-radius: 3px;
+}
+*/
+
+/* --- Calendar Widget --- */
+QCalendarWidget {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 4px;
+    padding: 4px;
+    /* No min/max height here */
+}
+
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: #1E1E1E; /* Secondary Background */
+    border: none;
+    border-bottom: 1px solid #383838; /* Line below navigation */
+    padding: 4px;
+    min-height: 30px; /* Ensure consistent height */
+    max-height: 30px; /* Fixed height */
+}
+
+QCalendarWidget QToolButton {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    min-height: 20px; /* Ensure consistent height */
+    max-height: 20px; /* Fixed height */
+}
+
+QCalendarWidget QToolButton:hover {
+    background-color: #2C2C2C; /* Tertiary Background */
+    color: #E0E0E0; /* Primary Text */
+}
+
+QCalendarWidget QToolButton:pressed {
+    background-color: #00BFFF; /* Accent Color */
+    color: #121212; /* Dark text */
+}
+
+QCalendarWidget QMenu {
+    background-color: #1E1E1E; /* Secondary Background */
+    border: 1px solid #383838; /* Match input border */
+    color: #E0E0E0; /* Primary Text */
+    padding: 5px;
+    border-radius: 4px;
+}
+
+QCalendarWidget QSpinBox {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 4px;
+    padding: 4px;
+    min-height: 20px; /* Ensure consistent height */
+    max-height: 20px; /* Fixed height */
+}
+
+QCalendarWidget QSpinBox::up-button, QCalendarWidget QSpinBox::down-button {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    min-height: 10px; /* Ensure consistent height */
+    max-height: 10px; /* Fixed height */
+}
+
+QCalendarWidget QSpinBox::up-button:hover, QCalendarWidget QSpinBox::down-button:hover {
+    background-color: #2C2C2C; /* Tertiary Background */
+    color: #E0E0E0; /* Primary Text */
+}
+
+QCalendarWidget QSpinBox::up-button:pressed, QCalendarWidget QSpinBox::down-button:pressed {
+    background-color: #00BFFF; /* Accent Color */
+    color: #121212; /* Dark text */
+}
+
+QCalendarWidget QDateEdit {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 4px;
+    padding: 4px;
+    min-height: 20px; /* Ensure consistent height */
+    max-height: 20px; /* Fixed height */
+}
+
+QCalendarWidget QAbstractItemView {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 4px;
+    padding: 4px;
+    /* No min/max height here */
+}
+
+QCalendarWidget QWidget#qt_calendar_calendarview {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    /* No min/max height here */
+}
+
+QCalendarWidget QAbstractItemView:enabled {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    /* No min/max height here */
+}
+
+QCalendarWidget QAbstractItemView:disabled {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #555555; /* Disabled Text */
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    /* No min/max height here */
+}
+
+QCalendarWidget QAbstractItemView::item:selected {
+    background-color: #007B9E; /* Selection Background (Darker Accent) */
+    color: #FFFFFF; /* Selection Text */
+    border: 1px solid #00BFFF; /* Accent indicator */
+    padding: 4px;
+    border-radius: 4px;
+}
+
+QCalendarWidget QAbstractItemView::item:hover {
+    background-color: #2C2C2C; /* Tertiary Background on hover */
+    color: #E0E0E0;
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* Style for DISABLED/NON-SELECTABLE dates - Optimization Target */
+/* Let Python or default handle disabled date styling for now */
+/*
+QCalendarWidget QTableView::item:!enabled {
+    // color: #383838; // Make text much darker/less prominent
+    color: #444444; // Even darker text
+    // background-color: #151515; // Slightly different, darker background
+    background-color: #101010; // Even darker background
+    // text-decoration: line-through; // Remove strikethrough for now
+    text-decoration: none;
+    font-style: normal; // Ensure normal style
+    border: 1px dashed #444444; // Add a dashed border
+    border-radius: 0px; // No rounding
+}
+*/
+
+/* Weekend Text Color (Optional Enhancement) */
+QCalendarWidget QWidget#qt_calendar_calendarview QAbstractItemView::item:weekend {
+    color: #FF8C8C; /* Light Red */
+}
+
+/* --- Splitter --- */
+QSplitter::handle {
+    background-color: #333333; /* Dark handle */
+}
+
+QSplitter::handle:vertical {
+    height: 2px; /* Thin handle */
+}
+
+QSplitter::handle:horizontal {
+    width: 2px;
+}
+
+QSplitter::handle:hover {
+    background-color: #FFA500; /* Orange hover */
+}
+
+/* Style for the specific splitter in NewsListPanel */
+QSplitter#newsListPreviewSplitter::handle:vertical {
+    height: 2px; /* Consistent thin handle */
+    background-color: #4a4a4a; /* Match selection background */
+    border: none;
+}
+
+QSplitter#newsListPreviewSplitter::handle:vertical:hover {
+    background-color: #FFA500; /* Orange hover */
+}
+
+/* --- ToolTip --- */
+QToolTip {
+    border: 1px solid #383838; /* Match input border */
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    padding: 5px 8px;
+    border-radius: 4px;
+    opacity: 230; /* Slightly transparent */
+}
+
+/* --- StatusBar --- */
+QStatusBar {
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #A0A0A0; /* Secondary Text */
+    border-top: 1px solid #383838; /* Match input border */
+}
+QStatusBar::item {
+    border: none; /* Remove borders between items */
+}
+
+/* --- ProgressBar --- */
+QProgressBar {
+    border: 1px solid #383838; /* Match input border */
+    border-radius: 5px; /* Match button rounding */
+    text-align: center;
+    background-color: #1E1E1E; /* Secondary Background */
+    color: #E0E0E0; /* Primary Text */
+    font-size: 12px;
+    min-height: 20px; /* Ensure visibility */
+}
+
+QProgressBar::chunk {
+    background-color: #00BFFF; /* Accent Color */
+    border-radius: 4px; /* Slightly less rounding than parent */
+    margin: 1px; /* Small margin for visual separation */
+}
+
+/* --- Calendar Widget --- */
+QCalendarWidget QWidget { /* The main calendar view */
+    alternate-background-color: #1E1E1E; /* Secondary Background for month view */
+    background-color: #121212; /* Primary Background */
+}
+
+QCalendarWidget QToolButton { /* Month/Year buttons */
+    height: 30px;
+    width: 80px;
+    color: #E0E0E0;
+    font-size: 13px;
+    background-color: #2C2C2C; /* Tertiary Background */
+    border-radius: 4px;
+    margin: 2px;
+}
+QCalendarWidget QToolButton:hover {
+    background-color: #3a3a3a; /* Match button hover */
+}
+QCalendarWidget QToolButton:pressed {
+    background-color: #009ACD; /* Accent Pressed */
+}
+
+QCalendarWidget QMenu { /* Month/Year selection menus */
+    background-color: #1E1E1E;
+    border: 1px solid #383838;
+    color: #E0E0E0;
+}
+QCalendarWidget QMenu::item:selected:enabled {
+    background-color: #00BFFF; /* Accent Color */
+    color: #121212;
+}
+
+QCalendarWidget QSpinBox { /* Year editor */
+    color: #E0E0E0;
+    background-color: #1E1E1E;
+    border: 1px solid #383838;
+    padding: 2px;
+    border-radius: 3px;
+}
+QCalendarWidget QSpinBox::up-button, QCalendarWidget QSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right; /* Adjust as needed */
+    width: 16px;
+    border: none;
+    background-color: #2C2C2C;
+}
+QCalendarWidget QSpinBox::up-arrow, QCalendarWidget QSpinBox::down-arrow {
+     width: 10px; height: 10px;
+     /* Use SVGs for arrows */
+}
+
+QCalendarWidget QAbstractItemView:enabled { /* Day grid */
+    font-size: 12px;
+    color: #E0E0E0; /* Primary Text for current month days */
+    background-color: #121212; /* Primary Background */
+    selection-background-color: #007B9E; /* Selection Background */
+    selection-color: #FFFFFF; /* Selection Text */
+    outline: 0;
+}
+QCalendarWidget QAbstractItemView:disabled { /* Days outside current month */
+    color: #666666; /* Calendar Other Month Text */
+}
+
+#qt_calendar_navigationbar { /* Header with weekday names */
+    background-color: #252525; /* Calendar Header Background */
+    color: #A0A0A0; /* Secondary Text */
+    border-bottom: 1px solid #383838;
+    min-height: 25px;
+}
+
+#qt_calendar_prevmonth, #qt_calendar_nextmonth { /* Arrow buttons */
+    border: none;
+    qproperty-icon: none; /* Remove default icons */
+    min-width: 20px;
+    max-width: 20px;
+    padding: 5px;
+    background-color: transparent;
+    border-radius: 4px;
+}
+#qt_calendar_prevmonth {
+    /* Use SVG for left arrow */
+    image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="12" viewBox="0 0 8 12"><polyline points="7,1 1,6 7,11" style="fill:none;stroke:%23E0E0E0;stroke-width:2"/></svg>');
+}
+#qt_calendar_nextmonth {
+    /* Use SVG for right arrow */
+    image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="12" viewBox="0 0 8 12"><polyline points="1,1 7,6 1,11" style="fill:none;stroke:%23E0E0E0;stroke-width:2"/></svg>');
+}
+#qt_calendar_prevmonth:hover, #qt_calendar_nextmonth:hover {
+    background-color: #2C2C2C; /* Tertiary Background */
+}
+#qt_calendar_prevmonth:pressed, #qt_calendar_nextmonth:pressed {
+    background-color: #009ACD; /* Accent Pressed */
+}
+
+#qt_calendar_calendarview::item { /* Individual day cells */
+    border-radius: 3px;
+    padding: 3px;
+}
+#qt_calendar_calendarview::item:selected {
+    background-color: #007B9E; /* Selection Background */
+    color: #FFFFFF;
+    border: 1px solid #00BFFF; /* Outline selected */
+}
+#qt_calendar_calendarview::item:hover {
+    background-color: #2C2C2C; /* Tertiary Background on hover */
+    border: 1px solid #383838;
+}
+#qt_calendar_calendarview::item[navigation="true"] { /* Today's date */
+    border: 1px solid #00BFFF; /* Calendar Today Outline */
+}
+/* Weekend styling (assuming locale sets weekends correctly) */
+/* QCalendarWidget QAbstractItemView:item:selected:day_off { ... } */
+/* QCalendarWidget QAbstractItemView:item:day_off { color: #FF8C8C; } */
+
+/* --- Specific Panel Adjustments --- */
+
+/* Search Panel Alignment & Fixed Height */
+#SearchPanel QLineEdit#searchInput,
+#SearchPanel QPushButton#searchButton,
+#SearchPanel QComboBox#searchOptionsCombo {
+    min-height: 30px; /* Ensure consistent height */
+    max-height: 30px; /* Fixed height */
+    margin-top: 0; /* Align vertically */
+    margin-bottom: 0;
+}
+
+/* Chat Panel Header Alignment & Fixed Height */
+#ChatPanel QLabel { /* Target the title label specifically if needed */
+    min-height: 25px; /* Fixed height for title */
+    max-height: 25px;
+}
+#ChatPanel QCheckBox#contextCheckbox {
+    margin-top: 5px; /* Add margin to prevent overlap */
+    margin-bottom: 0;
+    padding-top: 6px; /* Adjust padding to align text baseline */
+    padding-bottom: 6px;
+    min-height: 30px; /* Fixed height */
+    max-height: 30px; /* Fixed height */
+}
+#ChatPanel QPushButton#clearChatButton {
+    min-height: 30px; /* Match standard button height */
+    max-height: 30px; /* Fixed height */
+    padding: 6px 12px; /* Match standard button padding */
+    margin-top: 0; /* Align vertically */
+    margin-bottom: 0;
+}
+
+/* Chat Panel Input Alignment & Fixed Height */
+#ChatPanel QFrame#chatInputFrame {
+    min-height: 42px; /* Fixed height */
+    max-height: 42px; /* Fixed height */
+    border-radius: 21px; /* Half of fixed height */
+}
+#ChatPanel QTextEdit#chatInput {
+    min-height: 22px; /* Adjusted base height */
+    max-height: 22px; /* Fixed height for single line */
+    padding: 10px 15px; /* Adjust padding */
+}
+#ChatPanel QPushButton#chatSendButton,
+#ChatPanel QPushButton#chatStopButton {
+    min-height: 42px; /* Match frame height */
+    max-height: 42px;
+    min-width: 42px; /* Make square */
+    max-width: 42px;
+    border-radius: 21px; /* Keep circular */
+    margin-top: 0; /* Align vertically */
+    margin-bottom: 0;
+}
+
+/* Stop Button Size Adjustment */
+#ChatPanel QPushButton#chatStopButton {
+    min-height: 42px; /* Match send button height */
+    max-height: 42px;
+    min-width: 42px; /* Match send button width */
+    max-width: 42px;
+    border-radius: 21px; /* Keep circular */
+}
+
+/* Tab Widget Panel Minimum Height (Attempt to reduce jitter) */
+QTabWidget > QWidget#LLMPanel, /* Assuming LLMPanel has objectName="LLMPanel" */
+QTabWidget > QWidget#ChatPanel { /* Assuming ChatPanel has objectName="ChatPanel" */
+    min-height: 400px; /* Adjust as needed */
+}
+
+/* --- Minimalist Slider --- */
+QSlider {
+    min-height: 20px; /* Ensure enough clickable area */
+}
+
+QSlider::groove:horizontal {
+    background: transparent; /* Hidden by default */
+    border: none;
+    height: 4px; /* Thin track */
+    margin: 0 5px; /* Add some horizontal margin */
+}
+
+QSlider:hover::groove:horizontal {
+    background: #444444; /* Visible dark gray track on hover */
+    border-radius: 2px;
+}
+
+QSlider::handle:horizontal {
+    background: #BBBBBB; /* Light gray handle */
+    border: none;
+    width: 8px; /* Thin handle */
+    height: 16px; /* Taller than groove */
+    border-radius: 4px; /* Rounded handle */
+    margin: -6px 0; /* Center handle vertically over the groove */
+}
+
+QSlider:hover::handle:horizontal {
+    background: #DDDDDD; /* Brighter handle on hover */
+}
+
+QSlider::add-page:horizontal, QSlider::sub-page:horizontal {
+    background: transparent; /* Hide page sections by default */
+}
+
+QSlider:hover::add-page:horizontal, QSlider:hover::sub-page:horizontal {
+    background: #444444; /* Match groove background on hover */
+}
+
+/* Add similar rules for vertical sliders if needed */
+/*
+QSlider::groove:vertical { ... }
+QSlider::handle:vertical { ... }
+QSlider::add-page:vertical { ... }
+QSlider::sub-page:vertical { ... }
+*/
+
+/* --- Specific Input Field Heights --- */
+QLineEdit { min-height: 34px; max-height: 34px; } /* Fixed height */
+QTextEdit { min-height: 80px; }
+QPlainTextEdit { min-height: 80px; }
+
+/* --- ScrollBars --- */
+QScrollBar:vertical {
+    border: none;
+    background: #1E1E1E; /* Match input field background */
+    width: 10px; /* Slightly thicker */
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:vertical {
+    background: #3a3a3a; /* Tertiary Background */
+    min-height: 25px;
+    border-radius: 5px; /* Rounded handle */
+}
+QScrollBar::handle:vertical:hover {
+    background: #4a4a4a; /* Lighter handle on hover */
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+    height: 0px; /* Hide arrows */
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+    background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #1E1E1E;
+    height: 10px;
+    margin: 0px 0px 0px 0px;
+}
+QScrollBar::handle:horizontal {
+    background: #3a3a3a;
+    min-width: 25px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: #4a4a4a;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    border: none;
+    background: none;
+    width: 0px;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    background: none;
+}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+
+/* --- ComboBox --- */
+QComboBox {
+    background-color: #1E1E1E;
+    border: 1px solid #383838;
+    border-radius: 5px;
+    padding: 5px 8px; /* Adjust padding slightly */
+    min-height: 32px; /* Match line edit */
+    max-height: 32px;
+    color: #E0E0E0;
+}
+
+QComboBox:hover {
+    border: 1px solid #00BFFF; /* Accent color border on hover */
+}
+
+/* Style the dropdown arrow */
+QComboBox::down-arrow {
+    image: url(); /* Clear default arrow, use custom or none */
+    /* If using a custom SVG/PNG arrow: */
+    /* image: url(:/icons/down_arrow_dark.svg); */
+    /* width: 12px; */
+    /* height: 12px; */
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px; /* Width of the dropdown area */
+    border-left: 1px solid #383838; /* Separator line */
+    border-top-right-radius: 5px; /* Match main radius */
+    border-bottom-right-radius: 5px; /* Match main radius */
+    background-color: #2C2C2C; /* Button-like background for arrow area */
+}
+
+QComboBox::drop-down:hover {
+    background-color: #3a3a3a; /* Hover effect for arrow area */
+}
+
+/* Style the dropdown list view */
+QComboBox QAbstractItemView {
+    background-color: #1E1E1E; /* Dark background for dropdown */
+    border: 1px solid #383838; /* Border for the dropdown */
+    border-radius: 5px;
+    padding: 4px;
+    selection-background-color: #007B9E; /* Selection background */
+    selection-color: #FFFFFF; /* Selection text color */
+    outline: 0px; /* Remove focus outline */
+}
+
+QComboBox QAbstractItemView::item {
+    padding: 6px 8px; /* Padding for items */
+    min-height: 28px; /* Ensure items have height */
+    border-radius: 3px; /* Slightly round item corners */
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #2C2C2C; /* Hover effect for items */
+    color: #E0E0E0;
+}
+
+QComboBox:disabled {
+    background-color: #2C2C2C; /* Disabled background */
+    color: #555555; /* Disabled text */
+    border: 1px solid #333333;
+}
+QComboBox::drop-down:disabled {
+    background-color: #252525;
+    border-left: 1px solid #333333;
+}
+
+
+/* --- Slider --- */
+QSlider {
+    min-height: 20px; /* Provide some space */
+}
+
+QSlider::groove:horizontal {
+    border: 1px solid #2C2C2C; /* Subtle groove border */
+    height: 6px; /* Groove thickness */
+    background: #252525; /* Darker groove background */
+    margin: 2px 0;
+    border-radius: 3px;
+}
+
+QSlider::handle:horizontal {
+    /* background: #555555; */ /* Default: Subtle gray handle */
+    background: #00FF00; /* TEST: Bright green */
+    /* border: 1px solid #666666; */ /* Subtle border */
+    border: 1px solid #00AA00; /* TEST: Green border */
+    width: 14px; /* Handle width */
+    height: 14px; /* Handle height */
+    margin: -4px 0; /* Adjust vertical position */
+    border-radius: 7px; /* Make it circular */
+    /* Remove opacity and transition */
+}
+
+/* Hide hover effects for test */
+/*
+QSlider:hover::handle:horizontal {
+    background: #00BFFF; // Accent color handle on hover
+    border: 1px solid #33CFFF; // Lighter accent border on hover
+}
+QSlider::handle:horizontal:pressed {
+    background: #009ACD; // Darker Accent Pressed
+    border: 1px solid #00BFFF;
+}
+*/
+
+/* ... existing code ... */
+QSlider::handle:vertical {
+    /* background: #555555; */ /* Default: Subtle gray handle */
+    background: #00FF00; /* TEST: Bright green */
+    /* border: 1px solid #666666; */
+    border: 1px solid #00AA00; /* TEST: Green border */
+    width: 14px;
+    height: 14px;
+    margin: 0 -4px; /* Adjust horizontal position */
+    border-radius: 7px;
+}
+/* Hide hover effects for test */
+/*
+QSlider:hover::handle:vertical {
+    background: #00BFFF;
+    border: 1px solid #33CFFF;
+}
+QSlider::handle:vertical:pressed {
+    background: #009ACD;
+    border: 1px solid #00BFFF;
+}
+*/
+/* ... existing code ... */
+
+/* --- Calendar Widget --- */
+QCalendarWidget {
+    background-color: #1E1E1E; /* Surface background */
+    border: 1px solid #333333;
+    border-radius: 5px;
+    min-width: 300px; /* Ensure minimum width */
+}
+
+/* Header/Navigation Bar */
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: #252525; /* Header Background */
+    border-bottom: 1px solid #333333;
+    padding: 5px;
+    border-top-left-radius: 5px; /* Match main radius */
+    border-top-right-radius: 5px;
+}
+
+/* Navigation Buttons (Prev/Next Month) */
+QCalendarWidget QToolButton {
+    height: 30px;
+    width: 30px;
+    color: #E0E0E0;
+    font-size: 16px;
+    background-color: transparent;
+    border: none;
+    border-radius: 15px; /* Circular buttons */
+    margin: 0 2px; /* Spacing */
+    icon-size: 18px; /* Adjust icon size if using icons */
+}
+
+QCalendarWidget QToolButton:hover {
+    background-color: #3a3a3a; /* Hover effect */
+}
+
+QCalendarWidget QToolButton:pressed {
+    background-color: #009ACD; /* Pressed effect */
+}
+
+/* Month/Year Selection Menu */
+QCalendarWidget QMenu {
+    background-color: #1E1E1E; /* Match dropdown background */
+    border: 1px solid #383838;
+    padding: 4px;
+    color: #E0E0E0;
+}
+
+QCalendarWidget QMenu::item {
+    padding: 6px 20px; /* Padding for menu items */
+}
+
+QCalendarWidget QMenu::item:selected {
+    background-color: #007B9E; /* Selection background */
+    color: #FFFFFF;
+}
+
+/* Month/Year Labels (SpinBox and DateEdit are used here) */
+QCalendarWidget QSpinBox,
+QCalendarWidget QDateEdit {
+    background-color: #1E1E1E;
+    border: 1px solid #383838;
+    border-radius: 4px;
+    padding: 3px 6px;
+    color: #E0E0E0;
+    min-width: 60px; /* Ensure enough width */
+}
+QCalendarWidget QSpinBox::up-button, QCalendarWidget QSpinBox::down-button,
+QCalendarWidget QDateEdit::up-button, QCalendarWidget QDateEdit::down-button {
+    subcontrol-origin: border;
+    width: 16px;
+    border-left: 1px solid #383838;
+}
+QCalendarWidget QSpinBox::up-arrow, QCalendarWidget QSpinBox::down-arrow,
+QCalendarWidget QDateEdit::up-arrow, QCalendarWidget QDateEdit::down-arrow {
+    width: 10px;
+    height: 10px;
+    /* Consider using SVG icons here */
+}
+
+/* Calendar View (Days Grid) */
+QCalendarWidget QTableView { /* Target the table view */
+    gridline-color: #2C2C2C; /* Subtle grid lines */
+    background-color: #1E1E1E; /* Calendar grid background */
+    selection-background-color: #007B9E; /* Selection Background */
+    selection-color: #FFFFFF; /* Selection Text */
+    border: none; /* Remove inner border */
+}
+
+/* Weekday Header */
+QCalendarWidget QTableView QHeaderView::section {
+    background-color: #252525; /* Match header background */
+    color: #A0A0A0; /* Secondary Text */
+    font-weight: bold;
+    padding: 6px;
+    border: none;
+    border-bottom: 1px solid #333333; /* Separator */
+}
+
+/* Individual Date Cells */
+QCalendarWidget QTableView::item {
+    border: none; /* Remove cell borders */
+    text-align: center;
+    padding: 8px; /* Padding within cells */
+    border-radius: 4px; /* Slightly rounded corners for cells */
+}
+
+/* Hover effect for enabled dates */
+QCalendarWidget QTableView::item:enabled:hover {
+    background-color: #2C2C2C; /* Tertiary Background on hover */
+    color: #E0E0E0;
+}
+
+/* Selected date style */
+QCalendarWidget QTableView::item:selected:enabled {
+    background-color: #007B9E; /* Selection Background */
+    color: #FFFFFF; /* Selection Text */
+}
+
+/* Style for dates NOT in the current month */
+QCalendarWidget QTableView::item[navigation="false"] { /* Qt 5.15+ way */
+    color: #666666; /* Calendar Other Month Text */
+    background-color: transparent; /* Ensure no background interference */
+}
+/* Fallback for older Qt versions (might need testing) */
+/* QCalendarWidget QAbstractItemView:!enabled { color: #666666; } */
+
+/* Today's Date Outline */
+QCalendarWidget QTableView::item#qt_calendar_today { /* Use objectName */
+    font-weight: bold;
+    outline: 1px solid #00BFFF; /* Accent outline for today */
+    outline-offset: -2px; /* Adjust outline position */
+}
+
+/* Style for DISABLED/NON-SELECTABLE dates - Optimization Target */
+QCalendarWidget QTableView::item:!enabled {
+    /* color: #383838; */ /* Make text much darker/less prominent */
+    color: #444444; /* Even darker text */
+    /* background-color: #151515; */ /* Slightly different, darker background */
+    background-color: #101010; /* Even darker background */
+    /* text-decoration: line-through; */ /* Remove strikethrough for now */
+    text-decoration: none;
+    font-style: normal; /* Ensure normal style */
+    border: 1px dashed #444444; /* Add a dashed border */
+    border-radius: 0px; /* No rounding */
+}
+
+/* Weekend Text Color (Optional Enhancement) */
+/* Note: Requires logic in Python to set properties/roles */
+/* QCalendarWidget QTableView::item[weekend="true"] { */
+/*     color: #FF8C8C; /* Calendar Weekend Text */
+/* } */
+
+
+/* --- Table View --- */
+QTableView {
+    background-color: #1E1E1E; /* Surface background */
+    border: 1px solid #333333; /* Border */
+    gridline-color: #2C2C2C; /* Grid lines */
+    color: #E0E0E0; /* Default text color */
+    selection-background-color: #007B9E; /* Selection background */
+    selection-color: #FFFFFF; /* Selection text */
+}
+
+QTableView::item {
+    padding: 6px 8px; /* Cell padding */
+    border-bottom: 1px solid #2C2C2C; /* Row separator */
+    border-right: 1px solid #2C2C2C; /* Column separator */
+}
+QTableView::item:selected {
+    background-color: #007B9E;
+    color: #FFFFFF;
+}
+
+QHeaderView {
+    border: none; /* Remove header border */
+}
+
+QHeaderView::section {
+    background-color: #252525; /* Header background */
+    color: #A0A0A0; /* Secondary text */
+    padding: 8px 10px; /* Header padding */
+    border-bottom: 1px solid #333333; /* Separator */
+    border-right: 1px solid #2C2C2C; /* Separator */
+    font-weight: bold;
+}
+
+QHeaderView::section:horizontal {
+    border-top: 1px solid #333333; /* Add top border for horizontal header */
+}
+QHeaderView::section:vertical {
+    border-left: 1px solid #333333; /* Add left border for vertical header */
+}
+
+
+/* --- Tab Widget --- */
+QTabWidget::pane { /* The content area */
+    border: 1px solid #333333;
+    border-top: none; /* Remove top border as tabs are there */
+    background-color: #1E1E1E; /* Content background */
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    padding: 10px;
+}
+
+QTabWidget::tab-bar {
+    alignment: left; /* Align tabs to the left */
+    /* border: none; */ /* Remove border around the tab bar itself */
+}
+
+QTabBar::tab {
+    background-color: #252525; /* Tab background */
+    color: #A0A0A0; /* Tab text color */
+    border: 1px solid #333333;
+    border-bottom: none; /* Remove bottom border */
+    padding: 8px 15px; /* Tab padding */
+    margin-right: 2px; /* Space between tabs */
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    min-width: 80px; /* Minimum tab width */
+}
+
+QTabBar::tab:hover {
+    background-color: #2C2C2C; /* Hover background */
+    color: #E0E0E0; /* Hover text color */
+}
+
+QTabBar::tab:selected {
+    background-color: #1E1E1E; /* Selected tab matches content pane */
+    color: #E0E0E0; /* Selected tab text color */
+    border-color: #333333;
+    border-bottom-color: #1E1E1E; /* Make bottom border blend with pane */
+    font-weight: bold;
+}
+
+QTabBar::tab:!selected {
+    margin-top: 2px; /* Slightly lower non-selected tabs */
+}
+
+
+/* --- GroupBox --- */
+QGroupBox {
+    background-color: #1E1E1E; /* Slightly lighter background */
+    border: 1px solid #333333; /* Border color */
+    border-radius: 8px; /* Rounded corners */
+    padding-top: 25px; /* Space for title */
+    margin-top: 10px; /* Space above the group box */
+    font-size: 15px; /* Increase font size for groupbox */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left; /* Position title at the top center */
+    padding: 5px 10px; /* Padding around the title */
+    margin-left: 10px; /* Align title with content padding */
+    background-color: #333333; /* Distinct title background */
+    border: 1px solid #00BFFF; /* Accent border for title */
+    border-radius: 5px;
+    color: #E0E0E0; /* Title text color */
+    font-weight: bold;
+    font-size: 15px; /* Ensure title font size matches */
+}
+
+
+/* --- Tooltip --- */
+QToolTip {
+    background-color: #333333; /* Dark tooltip background */
+    color: #E0E0E0; /* Light tooltip text */
+    border: 1px solid #444444; /* Subtle tooltip border */
+    padding: 5px;
+    border-radius: 4px;
+    opacity: 230; /* Slightly transparent (255 is opaque) */
+}
+
+/* --- Progress Bar --- */
+QProgressBar {
+    border: 1px solid #383838;
+    border-radius: 5px;
+    text-align: center;
+    color: #E0E0E0; /* Text color on the progress bar */
+    background-color: #1E1E1E; /* Background of the bar */
+    min-height: 20px;
+    max-height: 20px;
+}
+
+QProgressBar::chunk {
+    background-color: #00BFFF; /* Accent color for the progress chunk */
+    border-radius: 4px; /* Match the main border radius slightly */
+    margin: 1px; /* Small margin around the chunk */
+}
+
+/* --- Status Bar --- */
+QStatusBar {
+    background-color: #1E1E1E;
+    border-top: 1px solid #2C2C2C;
+    color: #A0A0A0; /* Secondary text color */
+    padding: 3px 5px;
+    min-height: 25px;
+}
+QStatusBar::item {
+    border: none; /* Remove borders between items */
+}
+
+
+/* --- Menu --- */
+QMenu {
+    background-color: #1E1E1E;
+    border: 1px solid #383838; /* Slightly more visible border */
+    padding: 5px; /* Padding around the entire menu */
+    color: #E0E0E0;
+}
+
+QMenu::item {
+    padding: 8px 25px 8px 25px; /* Top/Bottom, Right, Left */
+    background-color: transparent;
+    border-radius: 4px; /* Rounded corners for items */
+    min-height: 25px; /* Ensure minimum item height */
+}
+
+QMenu::item:selected { /* Hover/Selection */
+    background-color: #007B9E; /* Selection Background */
+    color: #FFFFFF; /* Selection Text */
+}
+
+QMenu::item:disabled {
+    color: #555555; /* Disabled text color */
+    background-color: transparent;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #333333; /* Separator color */
+    margin: 5px 0px; /* Spacing around separator */
+}
+
+QMenu::icon {
+    padding-left: 5px; /* Space for icons */
+    /* size can be set via qproperty-iconSize if needed */
+}
+
+
+/* --- Dialogs --- */
+QDialog {
+    background-color: #121212; /* Main background */
+    border: 1px solid #2C2C2C;
+    border-radius: 6px;
+}
+
+QDialogButtonBox {
+    background-color: transparent; /* Buttons handled individually */
+}
+QDialogButtonBox QPushButton { /* Style buttons within the dialog box */
+    min-width: 80px; /* Ensure buttons have decent width */
+    margin: 0 5px; /* Spacing between buttons */
+}
+
+
+/* --- Splitter --- */
+QSplitter::handle {
+    background-color: #2C2C2C; /* Handle background */
+    /* image: url(:/icons/splitter_handle_dark.svg); */ /* Optional custom handle image */
+}
+QSplitter::handle:horizontal {
+    width: 2px; /* Thinner horizontal handle */
+    margin: 0 2px; /* Add some margin */
+}
+QSplitter::handle:vertical {
+    height: 2px; /* Thinner vertical handle */
+    margin: 2px 0; /* Add some margin */
+}
+QSplitter::handle:hover {
+    background-color: #3a3a3a; /* Hover color */
+}
+QSplitter::handle:pressed {
+    background-color: #00BFFF; /* Accent color when dragging */
+}
+
+
+/* --- Tree View --- */
+QTreeView {
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 5px;
+    color: #E0E0E0;
+    alternate-background-color: #252525; /* Alternating row color */
+    selection-background-color: #007B9E;
+    selection-color: #FFFFFF;
+}
+
+QTreeView::item {
+    padding: 5px;
+    border-radius: 3px;
+}
+QTreeView::item:hover {
+    background-color: #2C2C2C;
+}
+QTreeView::item:selected {
+    background-color: #007B9E;
+    color: #FFFFFF;
+}
+
+QTreeView::branch { /* Style the expand/collapse indicators */
+    /* Consider using custom SVG icons */
+    /* image: url(:/icons/branch_closed_dark.svg); */
+}
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+    /* image: url(:/icons/branch_closed_dark.svg); */
+}
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings {
+    /* image: url(:/icons/branch_open_dark.svg); */
+}
+
+/* Header for TreeView */
+QTreeView QHeaderView::section {
+    background-color: #252525;
+    color: #A0A0A0;
+    padding: 6px;
+    border: none;
+    border-bottom: 1px solid #333333;
+    border-right: 1px solid #2C2C2C;
+    font-weight: bold;
+}
+
+/* --- Text Browser / Read-only Text Edit --- */
+QTextBrowser {
+    background-color: #1E1E1E;
+    border: 1px solid #383838;
+    border-radius: 5px;
+    padding: 6px 8px;
+    color: #E0E0E0;
+    selection-background-color: #007B9E;
+    selection-color: #FFFFFF;
+}
+
+/* --- Custom Widgets (Example using objectName) --- */
+
+/* Sidebar Styling */
+QListWidget#sidebarListWidget {
+    background-color: #1E1E1E;
+    border: none;
+    padding: 0; /* Remove padding if items handle it */
+}
+QListWidget#sidebarListWidget::item {
+    background-color: transparent; /* Let selection handle color */
+    border: none;
+    border-bottom: 1px solid #2C2C2C; /* Separator */
+    padding: 12px 16px;
+    min-height: 40px;
+    max-height: 40px;
+    color: #A0A0A0; /* Default color (secondary text) */
+}
+QListWidget#sidebarListWidget::item:hover {
+    background-color: #252525; /* Subtle hover */
+    color: #E0E0E0;
+}
+QListWidget#sidebarListWidget::item:selected {
+    background-color: #007B9E; /* Accent selection */
+    color: #FFFFFF;
+    border-left: 3px solid #00BFFF; /* Selection indicator */
+    padding-left: 13px; /* Adjust padding for border */
+}
+
+/* News Detail Dialog Specifics (Example) */
+QDialog#NewsDetailDialog {
+    /* Specific dialog styles if needed */
+}
+QTextBrowser#newsDetailContentBrowser { /* Target specific browser */
+    font-size: 16px; /* Larger font for reading */
+    line-height: 1.6; /* Improve readability */
+    padding: 15px;
+}
+
+/* Analysis Panel */
+QWidget#AnalysisPanel {
+    /* Panel specific background or borders */
+}
+QChartView#AnalysisChartView {
+    border: 1px solid #333333;
+    border-radius: 5px;
+    /* Chart specific styles might need C++ side interaction */
+}
+
+/* LLM Panel */
+QWidget#LLMPanel {
+    /* Panel specific styles */
+}
+QTextBrowser#LLMResultBrowser {
+    background-color: #1A1A1A; /* Even darker background */
+    font-family: "Consolas", "Courier New", monospace; /* Monospace for code/output */
+    font-size: 14px;
+    padding: 10px;
+}
+QProgressBar#LLMProgressBar {
+    /* Specific progress bar styles */
+}
+
+
+/* Chat Panel Styling */
+QWidget#ChatPanel {
+    /* background-color: #1A1A1A; */ /* Optional different BG */
+}
+QTextBrowser#chatArea {
+    background-color: #1A1A1A; /* Match LLM Result BG? */
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding: 10px;
+}
+QLabel#selectedNewsLabel {
+    font-style: italic;
+    color: #A0A0A0;
+    padding: 5px 10px;
+    background-color: #252525; /* Different background for context */
+    border-bottom: 1px solid #333333;
+}
+QWidget#chatInputFrame {
+    background-color: #1E1E1E; /* Input area background */
+    border-top: 1px solid #333333; /* Separator */
+    padding: 8px;
+}
+QPlainTextEdit#chatInput {
+    border: 1px solid #383838;
+    border-radius: 20px; /* Pill shape */
+    padding: 10px 15px;
+    min-height: 40px; /* Base height */
+    max-height: 120px; /* Limit growth */
+    background-color: #252525; /* Slightly different input BG */
+}
+QLabel#typingIndicator {
+    color: #A0A0A0;
+    font-style: italic;
+    padding-left: 10px;
+}
+
+/* News List Specifics */
+QWidget#NewsListWidget {
+    /* Main widget container */
+}
+QLabel#newsListTitleLabel {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px 5px;
+    border-bottom: 1px solid #333333;
+    margin-bottom: 10px;
+    color: #00BFFF; /* Accent color for title */
+}
+QWidget#filterControlsWidget {
+    /* Container for filters */
+    margin-bottom: 10px;
+}
+/* Style individual filter elements like QComboBox, QDateEdit if needed */
+
+QListWidget#newsListDisplayWidget { /* The actual list */
+    background-color: transparent; /* Inherit from parent */
+    border: none;
+    padding: 0;
+    spacing: 15px; /* Space between items */
+}
+QListWidget#newsListDisplayWidget::item {
+    background-color: #1E1E1E;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 15px; /* Increased padding */
+    color: #E0E0E0;
+}
+QListWidget#newsListDisplayWidget::item:hover {
+    background-color: #252525;
+    border-color: #444444;
+}
+QListWidget#newsListDisplayWidget::item:selected {
+    background-color: #2C2C2C; /* Less intrusive selection */
+    border-left: 4px solid #00BFFF; /* Accent selection indicator */
+    padding-left: 11px; /* Adjust for border */
+}
+/* You might need a custom delegate to style elements *inside* the list item */
+QLabel#newsItemTitleLabel { /* Assuming objectName set in delegate */
+    font-size: 17px;
+    font-weight: bold;
+    color: #E0E0E0;
+    margin-bottom: 5px;
+}
+QLabel#newsItemSourceLabel {
+    font-size: 13px;
+    color: #A0A0A0;
+    margin-bottom: 8px;
+}
+QLabel#newsItemContentLabel {
+    font-size: 14px;
+    color: #C0C0C0; /* Slightly lighter than secondary */
+    line-height: 1.5;
+}
+
+/* --- Fix Focus Rectangle --- */
+QWidget:focus {
+    /* outline: 2px solid #00BFFF; */ /* Using accent color for focus */
+    /* outline-offset: -1px; */
+     border: 1px solid #00BFFF; /* Simpler border focus */
+     /* Note: This might conflict with existing borders. Use outline if preferred. */
+}
+/* Remove focus rect specifically where it's disruptive */
+QSlider:focus, QScrollBar:focus, QAbstractItemView:focus, QTabBar::tab:focus {
+    outline: none;
+     border: none; /* Ensure no border added */
+}
+QPushButton:focus {
+    outline: none; /* Remove default outline */
+    border: 1px solid #00BFFF; /* Use border for focus */
+    background-color: #3a3a3a; /* Match hover background */
+}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus {
+     outline: none;
+     border: 1px solid #00BFFF; /* Accent border on focus */
+     background-color: #252525; /* Slightly different background when focused */
+}
+
+
+/* --- Message Box --- */
+QMessageBox {
+    background-color: #1E1E1E; /* Match dialog background */
+    border: 1px solid #333333;
+    border-radius: 6px;
+}
+
+QMessageBox QLabel { /* Text inside */
+    color: #E0E0E0;
+    min-width: 250px; /* Ensure decent width */
+    padding: 15px;
+}
+
+QMessageBox QPushButton { /* Buttons */
+    min-width: 80px;
+    padding: 8px 15px;
+    margin: 5px;
+}
+
+/* --- Custom Date Picker Placeholder --- */
+/* If CustomDatePicker has objectName="CustomDatePicker" */
+/* CustomDatePicker { ... } */
+/* CustomDatePicker #dateLabel { ... } */
+/* CustomDatePicker #calendarButton { ... } */
+
+/* END OF FILE */

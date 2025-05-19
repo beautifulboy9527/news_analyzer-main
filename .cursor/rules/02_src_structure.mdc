@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Rule Name: 02_src_structure
+Description:
+`src/` 目录是应用的核心，采用分层架构：
+- `models/` 或 `models.py`: 定义核心数据模型（如 `NewsArticle`, `NewsSource`, `ChatMessage`）。 (注意: `project_structure.md` 指向 `models.py`，而 `README.md` 提及 `src/models` 目录，以 `project_structure.md` 为准，假设是 `src/models.py`)
+- `collectors/`: 实现从不同新闻源（RSS, 澎湃, JSON Feed）收集数据的模块。
+- `config/`: 应用配置管理，特别是 `LLMConfigManager` 用于 LLM 相关配置。
+- `core/`: 应用层核心业务逻辑。
+    - `app_service/` 和 `app_service.py`: 核心应用服务和协调器，连接 UI 和后端服务。
+    - `source_manager.py`: 管理新闻源配置（配置存储于 `news_data.db` 中，通过 `NewsStorage` 进行存取）。
+    - `news_update_service.py`: 负责新闻更新和获取。
+    - `news_data_processor.py`: 新闻数据初步处理和清洗。
+    - `news_clusterer.py`, `enhanced_news_clusterer.py`: 新闻聚类实现。
+    - `event_analyzer.py`: 聚类后事件的分析。
+    - `news_analysis_engine.py`: 驱动新闻分析流程。
+    - `analysis_service.py`: 提供新闻分析服务接口。
+    - `history_service.py`: 管理用户浏览历史等。
+    - `containers.py`: (若使用) 定义依赖注入容器。
+- `llm/`: 大语言模型集成。
+    - `providers/`: 不同 LLM 服务提供者的实现。
+    - `llm_service.py`: LLM 服务封装。
+    - `prompt_manager.py`: 管理和加载 Prompt 模板。
+- `prompts/`: (位于 `src/prompts/` 根据 `project_structure.md`) 存放 LLM 分析时使用的默认 Prompt 模板。
+- `storage/`: 数据持久化逻辑。
+    - `news_storage.py`: 负责核心应用数据（包括新闻文章、新闻源配置、浏览历史、LLM分析结果等）的 SQLite 数据库 (`news_data.db`) 交互和管理。
+- `ui/`: 用户界面层，使用 PySide6 构建。详见 `05_ui_structure`。
+- `utils/`: 通用工具函数和类，如 `ApiClient`。
+- `containers.py`: (位于 `src/` 根目录根据 `project_structure.md`) 主依赖注入容器定义。
+

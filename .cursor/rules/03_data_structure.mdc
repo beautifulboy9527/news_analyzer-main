@@ -1,0 +1,20 @@
+---
+description: 
+globs: data_structure
+alwaysApply: false
+---
+Rule Name: 03_data_structure
+Description:
+项目数据主要存储在根目录下的 `data/` 文件夹中：
+- `news/`: 由 `src/storage/news_storage.py` 管理。
+    - `latest_news.json`: (已迁移至数据库) ~~存储最新的新闻快照。~~
+    - `news_YYYYMMDD_HHMMSS.json`: (可能保留) 自动备份的历史新闻版本。
+    - (已迁移至数据库) ~~存储已读新闻状态和用户浏览历史的 JSON 文件。~~
+- `news_data.db`: SQLite 数据库文件，是应用核心数据的主要存储位置，包括新闻文章、新闻源配置、浏览历史、LLM分析结果和已读状态等。取代了原先分散的 JSON 文件存储。
+- `analysis/`: 推测用于存储新闻分析的结果。
+- `prompts/`: 存储用户自定义或系统内置的 LLM Prompt 模板。
+    - `prompts/prompts/`: (根据实际目录结构) 可能包含具体的 prompt 文件。
+- `webdriver_profiles/`: 存储 Selenium WebDriver 的用户配置文件，用于需要登录或保持会话的新闻源。
+- 应用设置（如主题、字体大小）可能通过 PySide6 的 `QSettings` 存储在特定于操作系统的位置，或在 `data/` 下的配置文件中。（注意：新闻源配置已迁移至 `news_data.db`，不再使用 `QSettings`）。
+
+

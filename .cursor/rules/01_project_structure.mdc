@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Rule Name: 01_project_structure
+Description:
+项目根目录包含：
+- `src/`: 核心应用代码。
+- `docs/`: 项目文档，包含开发计划、架构设计 (`development/logic/`)、规则和研究材料。`project_structure.md` 在此定义了详细的目录结构。
+- `tests/`: 自动化测试代码，结构与 `src/` 对应。
+- `data/`: 应用数据，如新闻缓存、用户配置、分析结果、LLM prompts 和 WebDriver profiles。
+- `drivers/`: (来自 `project_structure.md`) 包含 WebDriver 等驱动程序。
+- `logs/`: 应用运行时日志。
+- `images/`: 应用中使用的图片资源。
+- `.venv/`: Python 虚拟环境。
+- `.cursor/`, `.vscode/`: IDE 和编辑器特定配置。
+- `main.py`: 应用主入口点。
+- `requirements.txt`: Python 包依赖列表。
+- `README.md`: 项目概述、功能、架构、安装指南等。
+- `pytest.ini`: Pytest 配置文件。
+- `.gitignore`: Git 版本控制忽略的文件和目录。
+- `.env` 或 `.env.example`: 环境变量配置。
+- `run_tests.bat`, `一键依赖.bat`: Windows 批处理脚本。
+
