@@ -148,6 +148,15 @@ graph TD
             *   重构并简化了 `_on_analysis_completed` 槽函数，使其能够可靠地接收信号传递的数据，并根据数据类型（HTML或普通文本）正确更新 `self.result_edit` 控件的内容。
     *   **修复主界面搜索功能失效**:\n        *   **问题**: 由于模块化重构 (特别是 `AppService` 分解后)，导致 `SearchPanel` 的信号未能正确连接，使得主界面的搜索框输入关键词后无任何反应。\n        *   **修复过程**:\n            *   确认 `SearchPanel` 定义了 `search_requested` (携带搜索参数) 和 `search_cleared` (清空搜索时) 信号。\n            *   确认 `MainWindow` 具有 `_handle_search_request(params: dict)` 槽函数，用于接收搜索参数并调用 `NewsListViewModel.search_news(term, field)`。\n            *   确认 `NewsListViewModel` 具有 `search_news(term, field)` 和 `clear_search()` 方法。\n            *   **解决方案**: 在 `MainWindow` 的 `_connect_manager_signals` 方法中，添加了对 `SearchPanel` 实例的信号连接：\n                *   将 `SearchPanel.search_requested` 信号连接到 `MainWindow._handle_search_request` 槽。\n                *   将 `SearchPanel.search_cleared` 信号连接到 `NewsListViewModel.clear_search` 槽。\n            *   同时，确保了 `_handle_search_request` 方法从传递的 `params` 字典中正确使用键名 `\'query\'` (而不是之前的 `\'term\'`) 来获取搜索词，以匹配 `SearchPanel`发出的信号内容。\n        *   **结果**: 主界面的搜索功能恢复正常，用户可以输入关键词进行搜索，并且在清空搜索框后，新闻列表也能正确更新以显示所有内容。\n*   **修复LLM服务API调用**:\n    *   修正了 `LLMService` 类中的 `analyze_news_similarity` 方法。此前该方法在提供者为 `GeminiProvider` 时错误地使用了基础的 `api_url`，导致API请求404。现已确保其在此情况下正确使用 `GeminiProvider` 特有的 `chat_generate_url`。
 
+*   **(新增) 近期核心功能修复与日志优化 (截至 2025-05-19)**:
+    *   **新闻分类准确性**: 解决了已正确配置分类的新聞源（包括RSS和澎湃新闻）下的新闻条目被错误地归类到"未分类"的问题。
+    *   **澎湃新闻采集器**: 
+        *   修复了自定义爬虫配置（CSS选择器等）在清除后无法持久化，下次启动又恢复的问题。
+        *   改进了内容选择器逻辑，解决了因选择器失效导致无法提取正文的问题。
+        *   优化了采集速度（通过调整选择器等待时间等）。
+    *   **日志系统优化**: 大幅减少了应用在启动和运行期间的冗余日志输出，将大量INFO级别日志调整为DEBUG级别，使INFO日志更聚焦于关键操作和警告，提升了日志的可读性和问题定位效率。涉及模块包括 `AppService`, `NewsStorage`, `SourceManager`, `PengpaiCollector`, `RssCollector` 等。
+    *   **数据源管理**: 确认并强化了系统以数据库 (`news_data.db`) 作为新闻源配置的唯一真实来源，废弃了旧的 `data/news_sources.json` 文件。
+
 *   **(进行中) 核心重构: 数据存储迁移 (截至 2025-05-11)**:
     *   **阶段一: 准备与设计**: **已完成**。数据库表结构已在 `docs/development/logic/database_schema.sql` 中最终确定。`NewsStorage` 的新接口已规划完毕。
     *   **阶段二: `NewsStorage` 核心实现与初步迁移**: **已完成**。`src/storage/news_storage.py` 已使用 `sqlite3` 重写，实现了对新表结构的CRUD操作。数据迁移脚本 `tools/migrate_json_to_sqlite.py` 已开发完成，能够将旧JSON数据导入新SQLite数据库。
@@ -193,7 +202,13 @@ graph TD
     *   **状态**: 待最终确认
 
 *   **(高优先级) 核心重构: 数据存储迁移**: 将新闻数据（包括文章内容、元数据）、新闻源配置、浏览历史、已读状态以及相关的LLM分析结果从当前的 JSON 文件存储方式全面迁移到 SQLite 数据库。
-    *   **目标**:\n        *   从根本上解决 JSON 文件在数据量增大时带来的性能瓶颈（加载慢、内存占用高、查询效率低）。\n        *   提高数据操作的原子性和一致性。\n        *   为未来更复杂的数据分析和功能扩展（如高级搜索、数据关联）奠定坚实基础。\n        *   确保程序在迁移后功能完整、运行稳定、无数据操作相关错误。\n    *   **复杂度**: 高 (涉及核心模块重写、代码大范围适配和全面测试)\n    *   **详细实施步骤与策略**:\n\n        1.  **阶段一: 准备与设计 (Foundational Setup & Design)** - **已完成**
+    *   **目标**:\n        *   从根本上解决 JSON 文件在数据量增大时带来的性能瓶颈（加载慢、内存占用高、查询效率低）。\n        *   提高数据操作的原子性和一致性。\n        *   为未来更复杂的数据分析和功能扩展（如高级搜索、数据关联）奠定坚实基础。\n        *   确保程序在迁移后功能完整、运行稳定、无数据操作相关错误。\n    *   **复杂度**: 高 (涉及核心模块重写、代码大范围适配和全面测试)\n    *   **当前状态 (更新至 2025-05-19)**: 
+        *   **阶段一 (准备与设计)**: **已完成**。
+        *   **阶段二 (`NewsStorage`核心实现与初步迁移)**: **已完成**。
+        *   **阶段三 (服务层与ViewModel适配及集成测试)**: **已基本完成**。主要服务、ViewModel及UI组件已完成对新数据存储的适配。核心功能（新闻加载、刷新、分类、源管理、历史记录、LLM配置）已基于数据库运行。
+        *   **阶段四 (错误排除、性能优化与最终验证)**: **进行中/下一步重点**。在广泛使用和针对性测试中进一步发现和修复潜在问题，优化性能，并进行全面的回归测试以确保系统稳定。
+    *   **详细实施步骤与策略**:\n
+        1.  **阶段一: 准备与设计 (Foundational Setup & Design)** - **已完成**
             *   **1.1. 最终确定数据库表结构**:\n                *   **任务**: 基于 `docs/development/logic/01_news_collection_and_storage.md` 中的草案，并结合对现有JSON数据结构的全面分析，最终确定 SQLite 数据库的详细表结构（表名、字段名、数据类型、约束如 NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY）。\n                *   **状态**: **已完成**。产出为 `docs/development/logic/database_schema.sql`。
             *   **1.2. 规划 `NewsStorage` 新接口**:\n                *   **任务**: 设计新 `NewsStorage` 类的公共方法签名。这些方法应能满足上层服务（`AppService`, `HistoryService`等）对数据的所有CRUD需求。\n                *   **状态**: **已完成**。接口体现在重写后的 `src/storage/news_storage.py` 中。
 
@@ -230,10 +245,55 @@ graph TD
             *   `src/core/app_service.py`: **已适配**在其 `_initialize_dependencies` 方法中连接 `self.source_manager.sources_updated` 到自身的 `sources_updated` 信号，以确保新闻源的变更能够正确通知到监听 `AppService` 的UI组件。
 
         4.  **阶段四: 错误排除、性能优化与最终验证 (Bug Fixing, Performance Tuning & Final Validation)** - 待开始
-            *   **4.1. 集中错误排除**:\n                *   **状态**: 待开始。
-            *   **4.2. 性能评估与优化**:\n                *   **状态**: 待开始。
-            *   **4.3. 清理与收尾**:\n                *   **状态**: 待开始。
-            *   **4.4. 回归测试**: \n                *   **状态**: 待开始。
+            *   **4.1. 集中错误排除**:
+                *   **状态**: 待开始。
+            *   **4.2. 性能评估与优化**:
+                *   **状态**: 待开始。
+            *   **4.3. 清理与收尾**:
+                *   **状态**: 待开始。
+
+### 3.4 Current Status and Next Steps (as of 2025-05-20)
+
+*   **News Classification Accuracy**:
+    *   **Status**: **Resolved**.
+    *   **Details**: Addressed the issue where news items from sources with pre-defined categories (both RSS and Pengpai) were incorrectly appearing under "Uncategorized". This involved:
+        *   Modifying `categories.py` to include `UNCATEGORIZED_ID`, update `STANDARD_CATEGORIES`, and add `get_category_id_by_name`.
+        *   Updating `RssCollector` and `PengpaiCollector` to use `get_category_id_by_name` to store category IDs.
+        *   Refactoring `AppService` (`_handle_news_refreshed`, `_convert_dict_to_article`) to consistently handle category IDs internally and convert to names only when interacting with the database (which stores names).
+
+*   **Pengpai News (澎湃新闻) Collector**:
+    *   **Status**: **Fetching Failed - Investigation Paused**.
+    *   **Details**: Encountered persistent `ChromeDriver executable not found` errors, even after ensuring the path was correctly constructed to `drivers/chromedriver.exe`. The root cause was identified as the `chromedriver.exe` file itself being missing from the `drivers/` directory.
+    *   **Decision**: The user has decided to pause further fixes for the current Selenium/ChromeDriver-based `PengpaiCollector`. The plan is to switch to a more advanced browser automation tool, **BotBrowser** (`https://deepwiki.com/MiddleSchoolStudent/BotBrowser`), which is expected to offer better resilience against detection and handle JavaScript-heavy sites more effectively.
+
+*   **AP News (美联社政治) Content Fetching & Formatting**:
+    *   **Status**: **Partially Improved; Formatting Issues Remain for Specific Page Types**.
+    *   **Content Fetching**:
+        *   The `RssCollector._fetch_article_content_from_link` method was significantly enhanced with more robust selectors (`div.ArticleBody`, `div.StoryBody`, `article .RichTextStoryBody`, `div[data-key="article-body"]`, `.Page-articleBody`, generic `article`, `main`) and improved cleanup of unwanted elements (ads, scripts, etc.).
+        *   Content is now successfully extracted for many standard AP News articles (e.g., `/article/...` URLs) and video pages (`/video/...` URLs), where previously it might have shown "无内容".
+    *   **Formatting & "No Content" for `/projects/...` URLs**:
+        *   The RSS feed for AP News contains links to interactive "project" pages (e.g., `https://apnews.com/projects/...`).
+        *   These pages rely heavily on JavaScript to render their content.
+        *   The current `RssCollector` uses `requests` and `BeautifulSoup`, which do not execute JavaScript. As a result, for these `/projects/...` pages (and potentially some complex `/video/...` pages), the extracted content might be minimal, poorly formatted ("wall of text"), or appear as "无内容" (as seen with "Tracking Trump's Cabinet nominations").
+        *   The `main` selector helps as a fallback but cannot reconstruct layouts built dynamically by JavaScript.
+    *   **Date Handling**: Fallback to using `feed_data.feed.lastBuildDate` or `feed_data.feed.updated` for AP News items that lack an individual publication date.
+
+*   **WebDriver Process Management**:
+    *   **Status**: **Improved**.
+    *   **Details**: Modified `PengpaiCollector` to only attempt to kill `chromedriver.exe` processes, not all `chrome.exe` processes, to prevent unintended closure of the user's regular Chrome browser sessions.
+
+*   **Logging**:
+    *   **Status**: **Improved**.
+    *   **Details**: Set `RSSCollector` logger level to `DEBUG` to provide more detailed output for troubleshooting content extraction issues, particularly for AP News.
+
+*   **Next Major Step: Integrate BotBrowser**
+    *   **Objective**: Replace the current Selenium-based WebDriver approach (used in `PengpaiCollector`) and potentially enhance `RssCollector`'s link-fetching capabilities by integrating BotBrowser.
+    *   **Rationale**: BotBrowser's direct modification of Chromium and advanced fingerprint spoofing are expected to provide more reliable and undetectable automation, crucial for sources like Pengpai News and for correctly rendering JavaScript-heavy pages from sources like AP News `/projects/...`.
+    *   **Plan**:
+        1.  Update project documentation (this document) and commit current changes.
+        2.  Research BotBrowser's installation, API, and integration methods (CLI, Playwright/Puppeteer).
+        3.  Adapt `PengpaiCollector` to use BotBrowser.
+        4.  Evaluate using BotBrowser within `RssCollector` for fetching content from specific problematic URLs (like AP News `/projects/...`) that require JavaScript execution.
 
 ## 5. 总结报告
 
